@@ -26,7 +26,8 @@ targets:
         INFOPLIST_KEY_NSCameraUsageDescription: "We need camera access to take photos of your perfume bottles."
         INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "We need photo library access so you can choose existing perfume photos."
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: "YES"
-        INFOPLIST_KEY_UILaunchScreen: ""
+        INFOPLIST_KEY_UILaunchStoryboardName: LaunchScreen
+        INFOPLIST_KEY_UIUserInterfaceStyle: Light
         INFOPLIST_KEY_UIRequiredDeviceCapabilities:
           - arm64
         INFOPLIST_KEY_UISupportedInterfaceOrientations:

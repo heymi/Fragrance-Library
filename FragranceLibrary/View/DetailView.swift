@@ -1,16 +1,12 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Scroll Offset Preference Key
-
 struct ScrollOffsetPreferenceKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
     }
 }
-
-// MARK: - DetailView
 
 struct DetailView: View {
     let perfume: Perfume
@@ -20,39 +16,26 @@ struct DetailView: View {
 
     @State private var infoAppeared = false
     @State private var scrollOffset: CGFloat = 0
+    @State private var showImagePreview = false
+    @State private var showEdit = false
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                // Hero image with parallax
                 heroImage
-                    .frame(height: 340)
+                    .frame(height: 360)
                     .offset(y: max(0, -scrollOffset * 0.3))
 
-                // Info section
-                VStack(alignment: .leading, spacing: 20) {
-                    // Title
-                    VStack(alignment: .leading, spacing: 4) {
-                        if !perfume.brand.isEmpty {
-                            Text(perfume.brand)
-                                .font(.title3.weight(.semibold))
-                                .fontDesign(.serif)
-                                .foregroundStyle(Color.perfumeAccent)
-                        }
+                VStack(alignment: .leading, spacing: 22) {
+                    titleBlock
 
-                        Text(perfume.displayTitle)
-                            .font(.title.weight(.bold))
-                            .foregroundStyle(Color.perfumeText)
-                    }
-
-                    // Details
                     VStack(spacing: 0) {
-                        let subtitle = perfume.subtitle
-                        if !subtitle.isEmpty {
+                        if !perfume.subtitle.isEmpty {
                             detailRow(
                                 icon: "flask.fill",
                                 label: "Format",
-                                value: subtitle,
+                                value: perfume.subtitle,
                                 index: 0
                             )
                         }
@@ -73,42 +56,31 @@ struct DetailView: View {
                             index: 2
                         )
                     }
-                    .padding(.top, 8)
+                    .padding(.top, 4)
 
-                    // Delete button
-                    Button(role: .destructive) {
-                        deletePerfume()
-                    } label: {
-                        HStack {
-                            Image(systemName: "trash")
-                            Text("Remove from Collection")
-                        }
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(Color.perfumeDanger)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .strokeBorder(Color.perfumeDanger.opacity(0.3), lineWidth: 1)
-                        )
-                    }
-                    .padding(.top, 8)
+                    actions
                 }
                 .padding(24)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.perfumeBg)
+                .background(PerfumePaperBackground())
             }
         }
-        .background(Color.perfumeBg)
+        .background(PerfumePaperBackground())
         .coordinateSpace(name: "scroll")
         .ignoresSafeArea(edges: .top)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(perfume.brand)
+                Text(perfume.brand.isEmpty ? "Perfume" : perfume.brand)
                     .font(.caption.weight(.semibold))
                     .fontDesign(.serif)
                     .foregroundStyle(Color.perfumeText)
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button("Edit") {
+                    showEdit = true
+                }
+                .font(.subheadline.weight(.semibold))
             }
         }
         .onAppear {
@@ -124,27 +96,126 @@ struct DetailView: View {
         .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
             scrollOffset = -value
         }
+        .fullScreenCover(isPresented: $showImagePreview) {
+            if let image = loadedHeroImage {
+                ImagePreviewView(image: image)
+            }
+        }
+        .sheet(isPresented: $showEdit) {
+            NavigationStack {
+                EditPerfumeView(perfume: perfume)
+            }
+        }
+        .confirmationDialog(
+            "Remove this perfume?",
+            isPresented: $showDeleteConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Remove from Collection", role: .destructive) {
+                deletePerfume()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This deletes the saved bottle image, original photo, and local record from this device.")
+        }
     }
 
-    // MARK: - Hero Image
+    private var loadedHeroImage: UIImage? {
+        if let image = ImageStorageManager.shared.loadImage(
+            filename: perfume.processedImageFilename,
+            type: .processed
+        ) {
+            return image
+        }
+        return ImageStorageManager.shared.loadImage(
+            filename: perfume.originalImageFilename,
+            type: .original
+        )
+    }
+
+    private var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if !perfume.brand.isEmpty {
+                Text(perfume.brand)
+                    .font(.title3.weight(.semibold))
+                    .fontDesign(.serif)
+                    .foregroundStyle(Color.perfumeAccent)
+            }
+
+            Text(perfume.displayTitle)
+                .font(.system(.title, design: .serif, weight: .bold))
+                .foregroundStyle(Color.perfumeText)
+                .lineLimit(3)
+        }
+    }
+
+    private var actions: some View {
+        VStack(spacing: 12) {
+            Button {
+                showEdit = true
+            } label: {
+                Label("Edit Details", systemImage: "square.and.pencil")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.perfumeText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.perfumeCard.opacity(0.82))
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(Color.perfumeBorder, lineWidth: 1)
+                    )
+            }
+
+            Button(role: .destructive) {
+                showDeleteConfirm = true
+            } label: {
+                Label("Remove from Collection", systemImage: "trash")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.perfumeDanger)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(Color.perfumeDanger.opacity(0.3), lineWidth: 1)
+                    )
+            }
+        }
+        .padding(.top, 8)
+    }
 
     @ViewBuilder
     private var heroImage: some View {
-        if let filename = perfume.processedImageFilename,
-           let image = ImageStorageManager.shared.loadImage(filename: filename, type: .processed) {
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .padding(32)
-                .background(
-                    LinearGradient(
-                        colors: [Color.perfumeCard, Color.perfumeBg],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
+        if let image = loadedHeroImage {
+            ZStack {
+                LinearGradient(
+                    colors: [Color.perfumeCard, Color.perfumeBg],
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
+
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .padding(34)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        showImagePreview = true
+                    }
+
+                VStack {
+                    Spacer()
+                    Text("Tap to inspect image")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.perfumeTextSecondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(Color.perfumeCard.opacity(0.82))
+                        .clipShape(Capsule())
+                        .padding(.bottom, 12)
+                }
+            }
         } else {
-            // Fallback placeholder
             ZStack {
                 LinearGradient(
                     colors: [Color.perfumeCard, Color.perfumeBg],
@@ -158,21 +229,20 @@ struct DetailView: View {
         }
     }
 
-    // MARK: - Detail Row
-
     private func detailRow(
         icon: String,
         label: String,
         value: String,
         index: Int
     ) -> some View {
-        HStack(spacing: 14) {
+        HStack(alignment: .top, spacing: 14) {
             Image(systemName: icon)
                 .font(.subheadline)
                 .foregroundStyle(Color.perfumeAccent)
                 .frame(width: 22)
+                .padding(.top, 2)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(label)
                     .font(.caption)
                     .foregroundStyle(Color.perfumeTextSecondary)
@@ -193,8 +263,6 @@ struct DetailView: View {
         .animation(.fadeUp.delay(Double(index) * 0.1), value: infoAppeared)
     }
 
-    // MARK: - Actions
-
     private func animateInfoIn() {
         withAnimation {
             infoAppeared = true
@@ -203,12 +271,10 @@ struct DetailView: View {
 
     private func deletePerfume() {
         Haptic.heavy()
-        // Delete images
         ImageStorageManager.shared.deleteAll(
             for: perfume.originalImageFilename,
             processedFilename: perfume.processedImageFilename
         )
-        // Delete model
         modelContext.delete(perfume)
         try? modelContext.save()
         dismiss()

@@ -19,22 +19,34 @@
 		8E8EA795FE048A305F103770 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A145609EB44A40091842D90 /* HomeView.swift */; };
 		916406D0A0BB398504C6BD55 /* FragranceLibraryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E116DC83ED9622F7415924BF /* FragranceLibraryApp.swift */; };
 		92660E8BE8A615CBADB74F47 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC6A9C10BAF31A9B8FC1AF3 /* OCRService.swift */; };
+		968D3B2B98B6978008C6EFA1 /* ImagePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CD0559DA2B2008BF45674AE /* ImagePreviewView.swift */; };
+		A2E423AFDCAC0F75D36097F7 /* ManualCutoutEraseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C7EEC2E73B61D84835525A9 /* ManualCutoutEraseView.swift */; };
 		A6666D8C341EF655760D5B41 /* AddFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D91BEA0C8FB9E6AB9997280D /* AddFlowView.swift */; };
+		AE49CF814ED3A14819828E01 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 58079551953263314CA81040 /* LaunchScreen.storyboard */; };
+		B5B34D52FABC6310DE6DF506 /* ManualBottleCropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CF5BF4B751EA205146A888 /* ManualBottleCropView.swift */; };
 		C3CD796E0B5094AA2308F41D /* AddPerfumeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D835B97891C21E2EF2278AD /* AddPerfumeView.swift */; };
+		D80BC84DC340099A59B38806 /* EditPerfumeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A84C586D0DCFF7162465854 /* EditPerfumeView.swift */; };
 		E164DCAB645A756E0B6AF734 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D212E938A153187534EF7ED /* EmptyStateView.swift */; };
+		EA55BB666C92F2DC3A7CA7B2 /* PerfumeGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FD8CCD5B9B3D0243141311 /* PerfumeGalleryView.swift */; };
 		F8D28D189A957D6A64CE559A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED8EDB597948B5B07B4894 /* Theme.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0CD0559DA2B2008BF45674AE /* ImagePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewView.swift; sourceTree = "<group>"; };
 		0EC6A9C10BAF31A9B8FC1AF3 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
 		29E2EADBF1347ECD6AA57744 /* Perfume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Perfume.swift; sourceTree = "<group>"; };
+		2A84C586D0DCFF7162465854 /* EditPerfumeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPerfumeView.swift; sourceTree = "<group>"; };
+		33CF5BF4B751EA205146A888 /* ManualBottleCropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualBottleCropView.swift; sourceTree = "<group>"; };
+		36FD8CCD5B9B3D0243141311 /* PerfumeGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerfumeGalleryView.swift; sourceTree = "<group>"; };
 		3A145609EB44A40091842D90 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		4AA059B362F55D77B87495B6 /* TextParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextParser.swift; sourceTree = "<group>"; };
+		58079551953263314CA81040 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5F142207E10BDD027CE46C01 /* ImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		654B37CF187F82D5133111F0 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		7529AA060AD76E01802743CA /* ImageProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessingView.swift; sourceTree = "<group>"; };
 		7D835B97891C21E2EF2278AD /* AddPerfumeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPerfumeView.swift; sourceTree = "<group>"; };
 		86EC2BD97B44FAD1F0179189 /* ImageStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageStorageManager.swift; sourceTree = "<group>"; };
+		8C7EEC2E73B61D84835525A9 /* ManualCutoutEraseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualCutoutEraseView.swift; sourceTree = "<group>"; };
 		8DED8EDB597948B5B07B4894 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		9D212E938A153187534EF7ED /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		BB06600488623F40C89C2BEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -51,6 +63,7 @@
 			children = (
 				BB06600488623F40C89C2BEA /* Assets.xcassets */,
 				E116DC83ED9622F7415924BF /* FragranceLibraryApp.swift */,
+				58079551953263314CA81040 /* LaunchScreen.storyboard */,
 				C9496F9BA2B702B13E02E1F7 /* Extension */,
 				71BE7AC483971DE3F6196058 /* Model */,
 				99CB56012A84B92B6743143B /* Service */,
@@ -73,11 +86,16 @@
 				D91BEA0C8FB9E6AB9997280D /* AddFlowView.swift */,
 				7D835B97891C21E2EF2278AD /* AddPerfumeView.swift */,
 				654B37CF187F82D5133111F0 /* DetailView.swift */,
+				2A84C586D0DCFF7162465854 /* EditPerfumeView.swift */,
 				9D212E938A153187534EF7ED /* EmptyStateView.swift */,
 				3A145609EB44A40091842D90 /* HomeView.swift */,
+				0CD0559DA2B2008BF45674AE /* ImagePreviewView.swift */,
 				7529AA060AD76E01802743CA /* ImageProcessingView.swift */,
 				E20F93766C68E32BECBC892C /* InfoConfirmView.swift */,
+				33CF5BF4B751EA205146A888 /* ManualBottleCropView.swift */,
+				8C7EEC2E73B61D84835525A9 /* ManualCutoutEraseView.swift */,
 				BBC276836CE0ADA92F7CCE41 /* PerfumeCard.swift */,
+				36FD8CCD5B9B3D0243141311 /* PerfumeGalleryView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -179,6 +197,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				02F53E2CB4818B2D7875B04F /* Assets.xcassets in Resources */,
+				AE49CF814ED3A14819828E01 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,16 +233,21 @@
 				A6666D8C341EF655760D5B41 /* AddFlowView.swift in Sources */,
 				C3CD796E0B5094AA2308F41D /* AddPerfumeView.swift in Sources */,
 				74386B4325C13D85945831A3 /* DetailView.swift in Sources */,
+				D80BC84DC340099A59B38806 /* EditPerfumeView.swift in Sources */,
 				E164DCAB645A756E0B6AF734 /* EmptyStateView.swift in Sources */,
 				916406D0A0BB398504C6BD55 /* FragranceLibraryApp.swift in Sources */,
 				8E8EA795FE048A305F103770 /* HomeView.swift in Sources */,
+				968D3B2B98B6978008C6EFA1 /* ImagePreviewView.swift in Sources */,
 				1AF5EFC266D3829EE1D4430B /* ImageProcessingView.swift in Sources */,
 				2A0CCE6CCB59266ED8DA140D /* ImageProcessor.swift in Sources */,
 				22254F06C1CCE6D3ED91A49B /* ImageStorageManager.swift in Sources */,
 				8638DFEE08E4F542A5A0ABE6 /* InfoConfirmView.swift in Sources */,
+				B5B34D52FABC6310DE6DF506 /* ManualBottleCropView.swift in Sources */,
+				A2E423AFDCAC0F75D36097F7 /* ManualCutoutEraseView.swift in Sources */,
 				92660E8BE8A615CBADB74F47 /* OCRService.swift in Sources */,
 				5D5F1CEB541170D3A7569F09 /* Perfume.swift in Sources */,
 				211F917AB919AA454290ACB7 /* PerfumeCard.swift in Sources */,
+				EA55BB666C92F2DC3A7CA7B2 /* PerfumeGalleryView.swift in Sources */,
 				40DCB8236DFBC54E5E7E8FA7 /* TextParser.swift in Sources */,
 				F8D28D189A957D6A64CE559A /* Theme.swift in Sources */,
 			);
@@ -245,13 +269,14 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need camera access to take photos of your perfume bottles.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need photo library access so you can choose existing perfume photos.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen = "";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = (
 					arm64,
 				);
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = (
 					UIInterfaceOrientationPortrait,
 				);
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -396,13 +421,14 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need camera access to take photos of your perfume bottles.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need photo library access so you can choose existing perfume photos.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen = "";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = (
 					arm64,
 				);
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = (
 					UIInterfaceOrientationPortrait,
 				);
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

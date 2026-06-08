@@ -5,18 +5,18 @@ import AVFoundation
 struct AddPerfumeView: View {
     let onImageSelected: (UIImage) -> Void
 
+    @Environment(\.dismiss) private var dismiss
+
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var showCamera = false
     @State private var showCameraDeniedAlert = false
     @State private var optionAppeared: [Bool] = [false, false]
 
-    @Environment(\.dismiss) private var dismiss
-
     var body: some View {
         VStack(spacing: 24) {
-            // Cancel button
             HStack {
-                Button("Cancel") { dismiss() }
+                Button("Close") { dismiss() }
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.perfumeAccent)
                 Spacer()
             }
@@ -25,73 +25,81 @@ struct AddPerfumeView: View {
 
             Spacer()
 
-            // Header
-                VStack(spacing: 8) {
-                    Image(systemName: "camera.macro")
-                        .font(.system(size: 40))
-                        .foregroundStyle(Color.perfumeAccent)
-                        .padding(.bottom, 4)
+            VStack(spacing: 12) {
+                Text("SCENT ARCHIVE")
+                    .font(.caption.weight(.semibold))
+                    .tracking(2.4)
+                    .foregroundStyle(Color.perfumeAccent)
 
-                    Text("Add Perfume")
-                        .font(.title2.weight(.semibold))
-                        .foregroundStyle(Color.perfumeText)
+                Text("Add Perfume")
+                    .font(.system(size: 30, weight: .regular, design: .serif))
+                    .foregroundStyle(Color.perfumeText)
 
-                    Text("Capture a photo of your bottle to begin.")
-                        .font(.subheadline)
-                        .foregroundStyle(Color.perfumeTextSecondary)
+                Text("A quiet front-facing photo makes the bottle cutout cleaner.")
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Color.perfumeTextSecondary)
+                    .padding(.horizontal, 28)
+            }
+
+            shootingGuide
+                .padding(.horizontal, 24)
+
+            VStack(spacing: 14) {
+                optionButton(
+                    icon: "camera.fill",
+                    title: "Take Photo",
+                    subtitle: "Best for adding a bottle now",
+                    color: Color.perfumeAccent
+                ) {
+                    requestCameraAndShow()
                 }
+                .offset(x: optionAppeared[0] ? 0 : 60)
+                .opacity(optionAppeared[0] ? 1 : 0)
+                .animation(.fadeUp.delay(0.05), value: optionAppeared[0])
 
-                Spacer()
-
-                // Options
-                VStack(spacing: 14) {
-                    // Take Photo
-                    optionButton(
-                        icon: "camera.fill",
-                        title: "Take Photo",
-                        subtitle: "Use your camera",
-                        color: Color.perfumeAccent,
-                        index: 0
-                    ) {
-                        requestCameraAndShow()
-                    }
-                    .offset(x: optionAppeared[0] ? 0 : 60)
-                    .opacity(optionAppeared[0] ? 1 : 0)
-                    .animation(.fadeUp.delay(0.05), value: optionAppeared[0])
-
-                    // Choose from Library
-                    PhotosPicker(
-                        selection: $photoPickerItem,
-                        matching: .images,
-                        photoLibrary: .shared()
-                    ) {
-                        optionButtonLabel(
-                            icon: "photo.on.rectangle",
-                            title: "Choose from Library",
-                            subtitle: "Select an existing photo",
-                            color: Color.perfumeText
-                        )
-                    }
-                    .onChange(of: photoPickerItem) { _, newItem in
-                        Task {
-                            if let data = try? await newItem?.loadTransferable(type: Data.self),
-                               let image = UIImage(data: data) {
-                                await MainActor.run {
-                                    onImageSelected(image)
-                                }
+                PhotosPicker(
+                    selection: $photoPickerItem,
+                    matching: .images,
+                    photoLibrary: .shared()
+                ) {
+                    optionButtonLabel(
+                        icon: "photo.on.rectangle",
+                        title: "Choose from Library",
+                        subtitle: "Use an existing bottle photo",
+                        color: Color.perfumeText
+                    )
+                }
+                .onChange(of: photoPickerItem) { _, newItem in
+                    Task {
+                        if let data = try? await newItem?.loadTransferable(type: Data.self),
+                           let image = UIImage(data: data) {
+                            await MainActor.run {
+                                Haptic.medium()
+                                photoPickerItem = nil
+                                onImageSelected(image.fragranceNormalizedUp())
                             }
                         }
                     }
-                    .offset(x: optionAppeared[1] ? 0 : 60)
-                    .opacity(optionAppeared[1] ? 1 : 0)
-                    .animation(.fadeUp.delay(0.15), value: optionAppeared[1])
                 }
-                .padding(.horizontal, 24)
+                .offset(x: optionAppeared[1] ? 0 : 60)
+                .opacity(optionAppeared[1] ? 1 : 0)
+                .animation(.fadeUp.delay(0.15), value: optionAppeared[1])
+            }
+            .padding(.horizontal, 24)
 
-                Spacer()
-                Spacer()
+            VStack(spacing: 6) {
+                Label("Everything stays on this device", systemImage: "lock.fill")
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(Color.perfumeTextSecondary)
+                Text("Photos, OCR text, and collection data are stored locally.")
+                    .font(.caption)
+                    .foregroundStyle(Color.perfumeTextSecondary.opacity(0.8))
+            }
+
+            Spacer()
         }
-        .background(Color.perfumeBg)
+        .background(PerfumePaperBackground())
         .onAppear {
             optionAppeared[0] = true
             optionAppeared[1] = true
@@ -114,17 +122,67 @@ struct AddPerfumeView: View {
         }
     }
 
-    // MARK: - Helpers
-
     private func requestCameraAndShow() {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
         switch status {
-        case .authorized, .notDetermined:
+        case .authorized:
             showCamera = true
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async {
+                    if granted {
+                        showCamera = true
+                    } else {
+                        showCameraDeniedAlert = true
+                    }
+                }
+            }
         case .denied, .restricted:
             showCameraDeniedAlert = true
         @unknown default:
             showCamera = true
+        }
+    }
+
+    private var shootingGuide: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "viewfinder")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Color.perfumeAccent)
+
+                Text("Best capture")
+                    .font(PerfumeType.label(11))
+                    .tracking(1.6)
+                    .foregroundStyle(Color.perfumeTextSecondary)
+            }
+
+            VStack(spacing: 9) {
+                guideRow("Keep hands outside the bottle edge")
+                guideRow("Use a simple light background")
+                guideRow("Include cap, label, and base")
+            }
+        }
+        .padding(15)
+        .background(Color.perfumeCard.opacity(0.68))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(Color.perfumeBorder.opacity(0.78), lineWidth: 1)
+        )
+    }
+
+    private func guideRow(_ text: String) -> some View {
+        HStack(spacing: 9) {
+            Circle()
+                .fill(Color.perfumeAccent.opacity(0.58))
+                .frame(width: 4, height: 4)
+
+            Text(text)
+                .font(PerfumeType.body(12))
+                .foregroundStyle(Color.perfumeText)
+
+            Spacer()
         }
     }
 
@@ -133,7 +191,6 @@ struct AddPerfumeView: View {
         title: String,
         subtitle: String,
         color: Color,
-        index: Int,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -168,12 +225,14 @@ struct AddPerfumeView: View {
                 .foregroundStyle(Color.perfumeTextSecondary)
         }
         .padding(16)
-        .background(Color.perfumeCard)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .background(Color.perfumeCard.opacity(0.82))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(Color.perfumeBorder, lineWidth: 1)
+        )
     }
 }
-
-// MARK: - Button Style
 
 struct OptionButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
@@ -182,8 +241,6 @@ struct OptionButtonStyle: ButtonStyle {
             .animation(.buttonPress, value: configuration.isPressed)
     }
 }
-
-// MARK: - Camera Picker (UIKit bridge)
 
 struct CameraPickerView: UIViewControllerRepresentable {
     let onImagePicked: (UIImage) -> Void
@@ -214,8 +271,7 @@ struct CameraPickerView: UIViewControllerRepresentable {
             didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
         ) {
             if let image = info[.originalImage] as? UIImage {
-                // Don't manually dismiss — let SwiftUI handle it via the showCamera binding.
-                parent.onImagePicked(image)
+                parent.onImagePicked(image.fragranceNormalizedUp())
             }
         }
 

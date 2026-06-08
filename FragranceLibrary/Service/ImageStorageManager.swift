@@ -54,9 +54,9 @@ final class ImageStorageManager {
 
     /// Save processed image and return the filename
     func saveProcessed(_ image: UIImage) -> String? {
-        let filename = "\(UUID().uuidString).jpg"
+        let filename = "\(UUID().uuidString).png"
         let fileURL = processedDirectory.appendingPathComponent(filename)
-        guard let data = image.jpegData(compressionQuality: 0.85) else { return nil }
+        guard let data = image.pngData() else { return nil }
         do {
             try data.write(to: fileURL)
             return filename

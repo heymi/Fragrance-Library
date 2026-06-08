@@ -4,9 +4,10 @@ struct ImageProcessingView: View {
     let originalImage: UIImage
     let onContinue: (UIImage, OCRResult?) -> Void
 
+    @Environment(\.dismiss) private var dismiss
+
     @State private var processedImage: UIImage?
     @State private var ocrResult: OCRResult?
-
     @State private var progress: Double = 0
     @State private var currentStep: ProcessingStep = .compressing
     @State private var isComplete = false
@@ -14,105 +15,125 @@ struct ImageProcessingView: View {
     @State private var errorMessage: String?
     @State private var showAfter = false
     @State private var showContinue = false
+    @State private var showImagePreview = false
+    @State private var showManualCrop = false
     @State private var task: Task<Void, Never>?
-
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(spacing: 0) {
-                // Header
-                Text(isComplete ? "Processing Complete" : "Processing Image")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(Color.perfumeText)
-                    .padding(.top, 40)
+            header
+                .padding(.top, 34)
 
-                Spacer()
+            Spacer(minLength: 22)
 
-                // Image area
-                imageComparisonArea
-                    .padding(.horizontal, 24)
+            imageComparisonArea
+                .padding(.horizontal, 24)
 
-                Spacer()
+            Spacer(minLength: 22)
 
-                // Progress / Steps
-                if !isComplete {
-                    progressSection
-                        .padding(.horizontal, 32)
-                } else if !hasError {
-                    // Continue button on success
-                    if showContinue {
-                        Button {
-                            Haptic.medium()
-                            if let processed = processedImage {
-                                onContinue(processed, ocrResult)
-                            }
-                        } label: {
-                            Text("Continue")
-                                .font(.body.weight(.semibold))
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color.perfumeAccent)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                        .padding(.horizontal, 32)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                    }
-                } else {
-                    // Error + retry
-                    VStack(spacing: 12) {
-                        Text(errorMessage ?? "Processing failed.")
-                            .font(.subheadline)
-                            .foregroundStyle(Color.perfumeDanger)
-                        Button("Retry") {
-                            startProcessing()
-                        }
-                        .buttonStyle(.bordered)
-                    }
-                    .padding(.horizontal, 32)
-                }
+            bottomSection
+                .padding(.horizontal, 32)
 
-                Spacer()
+            Spacer(minLength: 18)
+        }
+        .background(PerfumePaperBackground())
+        .onAppear {
+            startProcessing()
+        }
+        .onDisappear {
+            task?.cancel()
+        }
+        .fullScreenCover(isPresented: $showImagePreview) {
+            if let processedImage {
+                ImagePreviewView(image: processedImage)
             }
-            .background(Color.perfumeBg)
-            .onAppear {
-                startProcessing()
+        }
+        .fullScreenCover(isPresented: $showManualCrop) {
+            ManualBottleCropView(image: originalImage) { normalizedRect in
+                showManualCrop = false
+                applyManualCrop(normalizedRect)
             }
+        }
     }
 
-    // MARK: - Image Comparison
+    private var header: some View {
+        VStack(spacing: 8) {
+            Text("CUTOUT ATELIER")
+                .font(.caption.weight(.semibold))
+                .tracking(2.2)
+                .foregroundStyle(Color.perfumeAccent)
+
+            Text(isComplete ? (hasError ? "Needs Another Pass" : "Cutout Ready") : "Creating Bottle Cutout")
+                .font(.system(size: 26, weight: .regular, design: .serif))
+                .foregroundStyle(Color.perfumeText)
+
+            Text(isComplete ? completionSubtitle : "Compressing, isolating the bottle, enhancing, and reading label text locally.")
+                .font(.footnote.weight(.medium))
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color.perfumeTextSecondary)
+                .padding(.horizontal, 32)
+        }
+    }
+
+    private var completionSubtitle: String {
+        if hasError {
+            return "The automatic cutout could not confidently isolate the perfume. You can retry or continue with a safe crop."
+        }
+        return "Tap the image to inspect transparency, outline, and edges before saving."
+    }
+
+    @ViewBuilder
+    private var bottomSection: some View {
+        if !isComplete {
+            progressSection
+        } else if hasError {
+            errorSection
+        } else if showContinue {
+            successSection
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
 
     @ViewBuilder
     private var imageComparisonArea: some View {
         if isComplete, let processed = processedImage {
-            // Show processed result
             Image(uiImage: processed)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .clipShape(RoundedRectangle(cornerRadius: PerfumeLayout.cardCornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: PerfumeLayout.cardCornerRadius)
-                        .strokeBorder(.white, lineWidth: PerfumeLayout.imageBorderWidth)
-                )
                 .shadow(color: Color.perfumeShadow, radius: 12, y: 4)
-                .frame(maxHeight: 360)
+                .frame(maxHeight: 380)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    showImagePreview = true
+                }
                 .opacity(showAfter ? 1 : 0)
                 .animation(.fadeUp, value: showAfter)
         } else {
-            // Show original during processing
-            Image(uiImage: originalImage)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .frame(maxHeight: 320)
+            ZStack(alignment: .bottomLeading) {
+                Image(uiImage: originalImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .frame(maxHeight: 340)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(Color.perfumeBorder, lineWidth: 1)
+                    )
+
+                Label(currentStep.label, systemImage: "wand.and.stars")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.perfumeText.opacity(0.72))
+                    .clipShape(Capsule())
+                    .padding(14)
+            }
         }
     }
 
-    // MARK: - Progress Section
-
     private var progressSection: some View {
         VStack(spacing: 20) {
-            // Circular progress
             ZStack {
                 Circle()
                     .stroke(Color.perfumeBorder, lineWidth: 6)
@@ -133,7 +154,6 @@ struct ImageProcessingView: View {
                     .foregroundStyle(Color.perfumeAccent)
             }
 
-            // Steps
             VStack(spacing: 10) {
                 ForEach(ProcessingStep.allCases) { step in
                     stepRow(step)
@@ -142,22 +162,81 @@ struct ImageProcessingView: View {
         }
     }
 
+    private var successSection: some View {
+        VStack(spacing: 10) {
+            Button {
+                Haptic.medium()
+                if let processed = processedImage {
+                    onContinue(processed, ocrResult)
+                }
+            } label: {
+                Text("Continue to Details")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.perfumeAccent)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+            .buttonStyle(PremiumPrimaryButtonStyle())
+
+            Button {
+                showManualCrop = true
+            } label: {
+                Label("Refine Bottle Area", systemImage: "crop")
+            }
+            .buttonStyle(PremiumSecondaryButtonStyle())
+
+            Text("OCR is only a starting point. You can edit every field next.")
+                .font(.footnote.weight(.medium))
+                .foregroundStyle(Color.perfumeTextSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+        }
+    }
+
+    private var errorSection: some View {
+        VStack(spacing: 12) {
+            Text(errorMessage ?? "Processing failed.")
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color.perfumeDanger)
+
+            Button("Retry Smart Cutout") {
+                startProcessing()
+            }
+            .buttonStyle(PremiumPrimaryButtonStyle())
+
+            Button("Manually Select Bottle") {
+                showManualCrop = true
+            }
+            .buttonStyle(PremiumSecondaryButtonStyle())
+
+            Button("Continue with Safe Crop") {
+                startProcessing(useSmartCrop: false)
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Color.perfumeTextSecondary)
+        }
+    }
+
     @ViewBuilder
     private func stepRow(_ step: ProcessingStep) -> some View {
         HStack(spacing: 10) {
-            if step.status(currentStep: currentStep, hasError: hasError) == .complete {
+            switch step.status(currentStep: currentStep, hasError: hasError) {
+            case .complete:
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(Color.perfumeAccent)
                     .scaleEffect(step == currentStep ? 1.1 : 1.0)
                     .animation(.checkPop, value: currentStep)
-            } else if step.status(currentStep: currentStep, hasError: hasError) == .inProgress {
+            case .inProgress:
                 ProgressView()
                     .scaleEffect(0.7)
                     .frame(width: 20, height: 20)
-            } else if step.status(currentStep: currentStep, hasError: hasError) == .error {
+            case .error:
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(Color.perfumeDanger)
-            } else {
+            case .pending:
                 Circle()
                     .stroke(Color.perfumeBorder, lineWidth: 1.5)
                     .frame(width: 20, height: 20)
@@ -175,9 +254,7 @@ struct ImageProcessingView: View {
         }
     }
 
-    // MARK: - Processing
-
-    private func startProcessing() {
+    private func startProcessing(useSmartCrop: Bool = true) {
         hasError = false
         isComplete = false
         showAfter = false
@@ -189,62 +266,154 @@ struct ImageProcessingView: View {
 
         task?.cancel()
         task = Task {
-            await processImage()
+            await processImage(useSmartCrop: useSmartCrop)
         }
     }
 
-    private func processImage() async {
+    private func applyManualCrop(_ normalizedRect: CGRect) {
+        hasError = false
+        isComplete = false
+        showAfter = false
+        showContinue = false
+        progress = 0
+        currentStep = .cropping
+        processedImage = nil
+        ocrResult = nil
+
+        task?.cancel()
+        task = Task {
+            await processManualCrop(normalizedRect)
+        }
+    }
+
+    private func processImage(useSmartCrop: Bool) async {
         let processor = ImageProcessor()
         let ocrService = OCRService()
+        let normalizedOriginal = processor.normalizeOrientation(originalImage)
 
-        // Step 1: Compress
-        currentStep = .compressing
+        await MainActor.run { currentStep = .compressing }
         await animateProgress(to: 0.25)
-        guard let compressed = processor.downscale(originalImage, maxWidth: 1024) else {
+        guard let compressed = processor.downscale(normalizedOriginal, maxWidth: 1024) else {
             await handleError("Failed to compress image.")
             return
         }
-        try? await Task.sleep(for: .milliseconds(200))
+        try? await Task.sleep(for: .milliseconds(160))
 
-        // Step 2: Crop
-        currentStep = .cropping
+        await MainActor.run { currentStep = .cropping }
         await animateProgress(to: 0.50)
-        let cropped = await processor.smartCrop(compressed)
-        try? await Task.sleep(for: .milliseconds(200))
+        let centerCropped = processor.centerCropToCardRatio(compressed)
+        let cropped = useSmartCrop ? await processor.smartCrop(compressed) : centerCropped
+        try? await Task.sleep(for: .milliseconds(160))
 
-        // Step 3: Adjust colors
-        currentStep = .enhancing
+        await MainActor.run { currentStep = .enhancing }
         await animateProgress(to: 0.70)
         let enhanced = processor.enhance(cropped)
-        try? await Task.sleep(for: .milliseconds(200))
+        let cutout: UIImage?
+        if useSmartCrop {
+            if let focusedCutout = await processor.foregroundCutout(cropped) {
+                cutout = focusedCutout
+            } else {
+                cutout = await processor.foregroundCutout(compressed)
+                    ?? processor.approximateBottleRegionCutout(compressed)
+            }
+        } else {
+            cutout = nil
+        }
+        try? await Task.sleep(for: .milliseconds(160))
 
-        // Step 4: Render with border
-        currentStep = .rendering
+        await MainActor.run { currentStep = .rendering }
         await animateProgress(to: 0.90)
 
-        // Run OCR in parallel with rendering
-        async let ocrResult = ocrService.recognizeText(from: originalImage)
+        async let bestOCR = ocrService.recognizeBestText(from: [
+            cropped,
+            centerCropped,
+            enhanced,
+            normalizedOriginal
+        ])
 
-        guard let rendered = processor.renderWithCardStyle(enhanced) else {
+        let rendered: UIImage?
+        if let cutout {
+            rendered = processor.renderCutoutCardStyle(cutout)
+        } else if useSmartCrop {
+            await handleError("Could not isolate the perfume bottle. Try a simpler background, or continue with a safe crop for now.")
+            return
+        } else {
+            rendered = processor.renderWithCardStyle(enhanced)
+        }
+
+        guard let rendered else {
             await handleError("Failed to render final image.")
             return
         }
 
-        let ocr = await ocrResult
+        let ocr = await bestOCR
 
         await MainActor.run {
             processedImage = rendered
             self.ocrResult = ocr
             progress = 1.0
-            currentStep = .rendering // all steps complete
+            currentStep = .rendering
             isComplete = true
 
-            // Animate after state entrance
             withAnimation(.fadeUp) {
                 showAfter = true
             }
-            // Delay continue button
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                withAnimation(.spring(duration: 0.4, bounce: 0.2)) {
+                    showContinue = true
+                }
+            }
+        }
+    }
+
+    private func processManualCrop(_ normalizedRect: CGRect) async {
+        let processor = ImageProcessor()
+        let ocrService = OCRService()
+        let normalizedOriginal = processor.normalizeOrientation(originalImage)
+
+        await animateProgress(to: 0.25)
+        guard let compressed = processor.downscale(normalizedOriginal, maxWidth: 1024) else {
+            await handleError("Failed to prepare image.")
+            return
+        }
+
+        await MainActor.run { currentStep = .cropping }
+        await animateProgress(to: 0.55)
+        guard let cutout = await processor.manualBottleRegionCutout(
+            compressed,
+            normalizedRect: normalizedRect
+        ) else {
+            await handleError("Could not isolate the bottle inside the selected area. Try framing only the perfume, with less hand or background.")
+            return
+        }
+
+        await MainActor.run { currentStep = .rendering }
+        await animateProgress(to: 0.90)
+
+        async let bestOCR = ocrService.recognizeBestText(from: [
+            cutout,
+            compressed,
+            normalizedOriginal
+        ])
+
+        guard let rendered = processor.renderCutoutCardStyle(cutout) else {
+            await handleError("Failed to render final image.")
+            return
+        }
+
+        let ocr = await bestOCR
+
+        await MainActor.run {
+            processedImage = rendered
+            self.ocrResult = ocr
+            progress = 1.0
+            currentStep = .rendering
+            isComplete = true
+
+            withAnimation(.fadeUp) {
+                showAfter = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                 withAnimation(.spring(duration: 0.4, bounce: 0.2)) {
                     showContinue = true
                 }
@@ -260,7 +429,7 @@ struct ImageProcessingView: View {
             await MainActor.run {
                 progress = start + (target - start) * fraction
             }
-            try? await Task.sleep(for: .milliseconds(16)) // ~60fps
+            try? await Task.sleep(for: .milliseconds(16))
         }
     }
 
@@ -273,8 +442,6 @@ struct ImageProcessingView: View {
     }
 }
 
-// MARK: - Processing Steps
-
 enum ProcessingStep: Int, CaseIterable, Identifiable {
     case compressing = 0
     case cropping
@@ -285,10 +452,10 @@ enum ProcessingStep: Int, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .compressing: return "Compressing image"
-        case .cropping: return "Cropping to card ratio"
-        case .enhancing: return "Enhancing colors"
-        case .rendering: return "Creating display image"
+        case .compressing: return "Preparing photo"
+        case .cropping: return "Finding bottle region"
+        case .enhancing: return "Enhancing label visibility"
+        case .rendering: return "Building transparent cutout"
         }
     }
 
@@ -303,8 +470,6 @@ enum ProcessingStep: Int, CaseIterable, Identifiable {
         return .pending
     }
 }
-
-// MARK: - OCR Result
 
 struct OCRResult {
     let fullText: String

@@ -30,6 +30,7 @@ struct AddFlowView: View {
             .navigationDestination(isPresented: $showConfirm) {
                 if let processed = processedImage {
                     InfoConfirmView(
+                        originalImage: selectedImage,
                         processedImage: processed,
                         ocrResult: ocrResult,
                         onSaved: { dismiss() }
