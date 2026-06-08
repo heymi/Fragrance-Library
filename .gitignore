@@ -1,0 +1,28 @@
+# Xcode
+*.xcuserdata
+*.xcworkspace/xcuserdata
+DerivedData/
+*.xccheckout
+*.moved-aside
+*.xcscmblueprint
+*.xcbkptlist
+
+# Build
+build/
+*.o
+*.LinkFileList
+
+# CocoaPods
+Pods/
+
+# SwiftPM
+.build/
+
+# macOS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
