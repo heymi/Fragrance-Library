@@ -2,11 +2,12 @@ import SwiftUI
 
 struct ImageProcessingView: View {
     let originalImage: UIImage
-    let onContinue: (UIImage, OCRResult?) -> Void
+    let onContinue: (UIImage, UIImage?, OCRResult?) -> Void
 
     @Environment(\.dismiss) private var dismiss
 
     @State private var processedImage: UIImage?
+    @State private var rawCutoutImage: UIImage?
     @State private var ocrResult: OCRResult?
     @State private var progress: Double = 0
     @State private var currentStep: ProcessingStep = .compressing
@@ -167,7 +168,7 @@ struct ImageProcessingView: View {
             Button {
                 Haptic.medium()
                 if let processed = processedImage {
-                    onContinue(processed, ocrResult)
+                    onContinue(processed, rawCutoutImage, ocrResult)
                 }
             } label: {
                 Text("Continue to Details")
@@ -310,11 +311,19 @@ struct ImageProcessingView: View {
         let enhanced = processor.enhance(cropped)
         let cutout: UIImage?
         if useSmartCrop {
-            if let focusedCutout = await processor.foregroundCutout(cropped) {
-                cutout = focusedCutout
+            // Run foreground cutout on both cropped and compressed images in parallel.
+            // Vision sometimes prefers one over the other depending on framing.
+            async let croppedCutout = processor.foregroundCutout(cropped)
+            async let compressedCutout = processor.foregroundCutout(compressed)
+            let results = await [croppedCutout, compressedCutout].compactMap { $0 }
+
+            // Pick the largest mask (most foreground detail captured)
+            if let best = results.max(by: { ($0.size.width * $0.size.height) < ($1.size.width * $1.size.height) }) {
+                cutout = best
             } else {
-                cutout = await processor.foregroundCutout(compressed)
-                    ?? processor.approximateBottleRegionCutout(compressed)
+                // Both failed — skip rectangle approximation; it's too imprecise for curved bottles.
+                // The error UI will offer manual crop instead.
+                cutout = nil
             }
         } else {
             cutout = nil
@@ -350,6 +359,7 @@ struct ImageProcessingView: View {
 
         await MainActor.run {
             processedImage = rendered
+            rawCutoutImage = cutout
             self.ocrResult = ocr
             progress = 1.0
             currentStep = .rendering
@@ -405,6 +415,7 @@ struct ImageProcessingView: View {
 
         await MainActor.run {
             processedImage = rendered
+            rawCutoutImage = cutout
             self.ocrResult = ocr
             progress = 1.0
             currentStep = .rendering

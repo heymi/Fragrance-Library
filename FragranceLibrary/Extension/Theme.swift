@@ -213,12 +213,13 @@ struct PremiumSecondaryButtonStyle: ButtonStyle {
             .foregroundStyle(Color.perfumeText)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 13)
-            .background(Color.perfumeCard.opacity(configuration.isPressed ? 0.62 : 0.82))
+            .background(Color.perfumeIvory.opacity(configuration.isPressed ? 0.70 : 0.95))
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(Color.perfumeBorder, lineWidth: 1)
+                    .strokeBorder(Color.perfumeText.opacity(0.18), lineWidth: 1)
             )
+            .shadow(color: Color.perfumeShadow, radius: 3, y: 1)
             .animation(.buttonPress, value: configuration.isPressed)
     }
 }

@@ -8,6 +8,7 @@ struct AddFlowView: View {
 
     @State private var selectedImage: UIImage?
     @State private var processedImage: UIImage?
+    @State private var rawCutoutImage: UIImage?
     @State private var ocrResult: OCRResult?
     @State private var showProcessing = false
     @State private var showConfirm = false
@@ -20,8 +21,9 @@ struct AddFlowView: View {
             }
             .navigationDestination(isPresented: $showProcessing) {
                 if let image = selectedImage {
-                    ImageProcessingView(originalImage: image) { processed, ocr in
-                        processedImage = processed
+                    ImageProcessingView(originalImage: image) { rendered, rawCutout, ocr in
+                        processedImage = rendered
+                        rawCutoutImage = rawCutout
                         ocrResult = ocr
                         showConfirm = true
                     }
@@ -32,6 +34,7 @@ struct AddFlowView: View {
                     InfoConfirmView(
                         originalImage: selectedImage,
                         processedImage: processed,
+                        rawCutoutImage: rawCutoutImage,
                         ocrResult: ocrResult,
                         onSaved: { dismiss() }
                     )

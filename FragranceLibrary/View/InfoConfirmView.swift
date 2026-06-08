@@ -3,7 +3,6 @@ import SwiftData
 
 struct InfoConfirmView: View {
     let originalImage: UIImage?
-    let processedImage: UIImage
     let ocrResult: OCRResult?
     let onSaved: () -> Void
 
@@ -15,6 +14,7 @@ struct InfoConfirmView: View {
     @State private var volume: String
     @State private var notes: String
     @State private var currentProcessedImage: UIImage
+    @State private var rawCutoutImage: UIImage?
     @State private var fieldAppeared: [Bool] = [false, false, false, false, false]
     @State private var isSaving = false
     @State private var isRefining = false
@@ -45,16 +45,27 @@ struct InfoConfirmView: View {
         !isSaving && !saveSuccess && (!trimmedBrand.isEmpty || !trimmedName.isEmpty)
     }
 
+    /// The image to display: always the card-styled version with alpha-aware outline.
+    private var displayImage: Image {
+        Image(uiImage: currentProcessedImage)
+    }
+
+    /// Image passed to the erase tool — always the raw cutout when available
+    private var eraseSourceImage: UIImage {
+        rawCutoutImage ?? currentProcessedImage
+    }
+
     init(
         originalImage: UIImage? = nil,
         processedImage: UIImage,
+        rawCutoutImage: UIImage? = nil,
         ocrResult: OCRResult?,
         onSaved: @escaping () -> Void
     ) {
         self.originalImage = originalImage
-        self.processedImage = processedImage
         self.ocrResult = ocrResult
         self.onSaved = onSaved
+        _rawCutoutImage = State(initialValue: rawCutoutImage)
         _brand = State(initialValue: ocrResult?.brand ?? "")
         _name = State(initialValue: ocrResult?.name ?? "")
         _concentration = State(initialValue: ocrResult?.concentration ?? "")
@@ -66,7 +77,7 @@ struct InfoConfirmView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 22) {
-                Image(uiImage: currentProcessedImage)
+                displayImage
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .shadow(color: Color.perfumeShadow, radius: 12, y: 4)
@@ -96,24 +107,34 @@ struct InfoConfirmView: View {
 
                 detectionSummary
 
-                HStack(spacing: 12) {
-                    if originalImage != nil {
+                // Image refinement tools
+                VStack(spacing: 6) {
+                    Divider().background(Color.perfumeBorder)
+                    Text("IMAGE TOOLS")
+                        .font(PerfumeType.label(10))
+                        .tracking(2.0)
+                        .foregroundStyle(Color.perfumeTextSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    HStack(spacing: 12) {
+                        if originalImage != nil {
+                            Button {
+                                showManualCrop = true
+                            } label: {
+                                Label("Refine", systemImage: "crop")
+                            }
+                            .buttonStyle(PremiumSecondaryButtonStyle())
+                            .disabled(isRefining || isSaving || saveSuccess)
+                        }
+
                         Button {
-                            showManualCrop = true
+                            showManualErase = true
                         } label: {
-                            Label("Refine", systemImage: "crop")
+                            Label("Clean Edges", systemImage: "eraser")
                         }
                         .buttonStyle(PremiumSecondaryButtonStyle())
                         .disabled(isRefining || isSaving || saveSuccess)
                     }
-
-                    Button {
-                        showManualErase = true
-                    } label: {
-                        Label("Clean Edges", systemImage: "eraser")
-                    }
-                    .buttonStyle(PremiumSecondaryButtonStyle())
-                    .disabled(isRefining || isSaving || saveSuccess)
                 }
                 .padding(.horizontal, 24)
 
@@ -205,8 +226,13 @@ struct InfoConfirmView: View {
             }
         }
         .fullScreenCover(isPresented: $showManualErase) {
-            ManualCutoutEraseView(image: currentProcessedImage) { editedImage in
-                currentProcessedImage = editedImage
+            ManualCutoutEraseView(image: eraseSourceImage) { editedImage in
+                rawCutoutImage = editedImage
+                if let restyled = ImageProcessor().renderCutoutCardStyle(editedImage) {
+                    currentProcessedImage = restyled
+                } else {
+                    currentProcessedImage = editedImage
+                }
                 validationMessage = nil
                 showManualErase = false
             }
@@ -442,6 +468,7 @@ struct InfoConfirmView: View {
 
             await MainActor.run {
                 withAnimation(.galleryBloom) {
+                    rawCutoutImage = cutout
                     currentProcessedImage = rendered
                     isRefining = false
                 }

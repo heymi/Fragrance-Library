@@ -550,6 +550,43 @@ final class ImageProcessor {
         }
     }
 
+    // MARK: - Alpha Cleanup
+
+    /// Extracts the alpha channel, applies morphological opening + closing
+    /// on the alpha mask alone, then re-applies the cleaned mask via
+    /// `cgImage.masking()` — a well-tested Core Graphics API that avoids
+    /// the undefined behaviour of `CIImage(color: .clear).cropped(to:)`.
+    func cleanCutoutAlpha(_ image: UIImage) -> UIImage? {
+        guard let cgImage = image.cgImage else { return nil }
+        let ciImage = CIImage(cgImage: cgImage)
+
+        // R=G=B=alpha → luminance = alpha in every channel
+        let alphaMask = ciImage.applyingFilter("CIColorMatrix", parameters: [
+            "inputRVector": CIVector(x: 0, y: 0, z: 0, w: 1),
+            "inputGVector": CIVector(x: 0, y: 0, z: 0, w: 1),
+            "inputBVector": CIVector(x: 0, y: 0, z: 0, w: 1),
+            "inputAVector": CIVector(x: 0, y: 0, z: 0, w: 0),
+            "inputBiasVector": CIVector(x: 0, y: 0, z: 0, w: 0)
+        ])
+
+        // Morphology on mask only
+        let openR: Float = 3
+        let closeR: Float = 2
+        let eroded = alphaMask.applyingFilter("CIMorphologyMinimum", parameters: [kCIInputRadiusKey: openR])
+        let opened = eroded.applyingFilter("CIMorphologyMaximum", parameters: [kCIInputRadiusKey: openR])
+        let dilated = opened.applyingFilter("CIMorphologyMaximum", parameters: [kCIInputRadiusKey: closeR])
+        let cleaned = dilated.applyingFilter("CIMorphologyMinimum", parameters: [kCIInputRadiusKey: closeR])
+
+        // Render cleaned mask as single-channel grayscale, then apply via cgImage.masking
+        let ctx = CIContext()
+        guard let maskCG = ctx.createCGImage(cleaned, from: cleaned.extent,
+                                              format: .L8,
+                                              colorSpace: CGColorSpaceCreateDeviceGray()),
+              let masked = cgImage.masking(maskCG) else { return nil }
+
+        return UIImage(cgImage: masked, scale: image.scale, orientation: image.imageOrientation)
+    }
+
     func renderCutoutCardStyle(_ subjectImage: UIImage) -> UIImage? {
         let canvasSize = CGSize(width: 900, height: 1125)
         let subjectMaxArea = CGRect(origin: .zero, size: canvasSize)
@@ -572,16 +609,25 @@ final class ImageProcessor {
             subjectImage.draw(in: subjectRect)
             ctx.cgContext.restoreGState()
 
-            let outlineRadius: CGFloat = 13
-            let outlineOffsets: [CGPoint] = stride(from: 0.0, to: 360.0, by: 15.0).map { degrees in
-                let radians = degrees * .pi / 180
-                return CGPoint(
-                    x: cos(radians) * outlineRadius,
-                    y: sin(radians) * outlineRadius
-                )
+            // Dominant-color edge glow — pad the subject with transparent margin,
+            // blur the alpha, tint with the bottle's hue, and draw behind.
+            if let dominant = dominantColor(of: subjectImage),
+               let glowImage = coloredGlowImage(for: subjectImage, color: dominant,
+                                                 padFraction: 0.18, blurRadius: 24, alpha: 0.42) {
+                let glowRect = subjectRect.insetBy(dx: -subjectRect.width * 0.13,
+                                                   dy: -subjectRect.height * 0.13)
+                glowImage.draw(in: glowRect)
             }
 
-            for offset in outlineOffsets {
+            // Soft white glow — hides cutout edge artifacts
+            ctx.cgContext.setAlpha(0.35)
+            for offset in outlineOffsets(radius: 20, steps: 36) {
+                outlineImage.draw(in: subjectRect.offsetBy(dx: offset.x, dy: offset.y))
+            }
+
+            // Crisp white outline — defines clean edge
+            ctx.cgContext.setAlpha(1.0)
+            for offset in outlineOffsets(radius: 10, steps: 36) {
                 outlineImage.draw(in: subjectRect.offsetBy(dx: offset.x, dy: offset.y))
             }
 
@@ -590,6 +636,74 @@ final class ImageProcessor {
     }
 
     // MARK: - Private Helpers
+
+    /// Extracts the average color of the non-transparent region of the image.
+    func dominantColor(of image: UIImage) -> UIColor? {
+        guard let ciImage = CIImage(image: image) else { return nil }
+        let avgFilter = CIFilter(name: "CIAreaAverage", parameters: [
+            kCIInputImageKey: ciImage,
+            kCIInputExtentKey: CIVector(cgRect: ciImage.extent)
+        ])
+        guard let output = avgFilter?.outputImage else { return nil }
+
+        var pixel: [UInt8] = [0, 0, 0, 0]
+        let ctx = CIContext()
+        ctx.render(output, toBitmap: &pixel, rowBytes: 4,
+                   bounds: CGRect(x: 0, y: 0, width: 1, height: 1),
+                   format: .RGBA8, colorSpace: nil)
+        return UIColor(red: CGFloat(pixel[0]) / 255,
+                       green: CGFloat(pixel[1]) / 255,
+                       blue: CGFloat(pixel[2]) / 255,
+                       alpha: 1)
+    }
+
+    /// Creates a blurred, tinted glow image by padding the subject with transparency,
+    /// extracting its alpha, applying gaussian blur, and coloring it with the given color.
+    /// The result is a single UIImage ready to draw behind the subject.
+    private func coloredGlowImage(for image: UIImage, color: UIColor,
+                                   padFraction: CGFloat, blurRadius: Double,
+                                   alpha: CGFloat) -> UIImage? {
+        guard let ciImage = CIImage(image: image) else { return nil }
+
+        // Pad with transparent margin so blur extends beyond the subject bounds
+        let padX = ciImage.extent.width * padFraction
+        let padY = ciImage.extent.height * padFraction
+        let paddedExtent = ciImage.extent.insetBy(dx: -padX, dy: -padY)
+
+        // Alpha-only → blur → colorize
+        let alphaOnly = ciImage.applyingFilter("CIColorMatrix", parameters: [
+            "inputRVector": CIVector(x: 0, y: 0, z: 0, w: 1),
+            "inputGVector": CIVector(x: 0, y: 0, z: 0, w: 1),
+            "inputBVector": CIVector(x: 0, y: 0, z: 0, w: 1),
+            "inputAVector": CIVector(x: 0, y: 0, z: 0, w: 0),
+            "inputBiasVector": CIVector(x: 0, y: 0, z: 0, w: 0)
+        ])
+        let blurred = alphaOnly
+            .applyingGaussianBlur(sigma: blurRadius)
+            .cropped(to: paddedExtent)
+
+        // Colorize: map blurred alpha to the target color
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        color.getRed(&r, green: &g, blue: &b, alpha: &a)
+        let colored = blurred.applyingFilter("CIColorMatrix", parameters: [
+            "inputRVector": CIVector(x: 0, y: 0, z: 0, w: r * a),
+            "inputGVector": CIVector(x: 0, y: 0, z: 0, w: g * a),
+            "inputBVector": CIVector(x: 0, y: 0, z: 0, w: b * a),
+            "inputAVector": CIVector(x: 0, y: 0, z: 0, w: alpha),
+            "inputBiasVector": CIVector(x: 0, y: 0, z: 0, w: 0)
+        ])
+
+        let ctx = CIContext()
+        guard let cg = ctx.createCGImage(colored, from: paddedExtent) else { return nil }
+        return UIImage(cgImage: cg, scale: image.scale, orientation: .up)
+    }
+
+    private func outlineOffsets(radius: CGFloat, steps: Int) -> [CGPoint] {
+        stride(from: 0.0, to: 360.0, by: 360.0 / Double(steps)).map { degrees in
+            let radians = degrees * .pi / 180
+            return CGPoint(x: cos(radians) * radius, y: sin(radians) * radius)
+        }
+    }
 
     private func resize(_ image: UIImage, to size: CGSize) -> UIImage? {
         let format = UIGraphicsImageRendererFormat.default()
