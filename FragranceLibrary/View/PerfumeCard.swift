@@ -7,7 +7,6 @@ struct PerfumeCard: View {
     var onOpenImage: () -> Void = {}
 
     @State private var appeared = false
-    @GestureState private var isPressed = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 9) {
@@ -25,17 +24,9 @@ struct PerfumeCard: View {
             }
             .buttonStyle(.plain)
         }
-        .scaleEffect(isPressed ? 0.985 : 1)
-        .animation(.buttonPress, value: isPressed)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 12)
         .animation(.cardStagger(index: index, baseDelay: 0.035), value: appeared)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .updating($isPressed) { _, state, _ in
-                    state = true
-                }
-        )
         .onAppear {
             appeared = true
         }

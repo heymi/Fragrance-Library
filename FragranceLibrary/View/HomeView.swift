@@ -12,27 +12,24 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                PerfumePaperBackground()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    topBar
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 18) {
-                        topBar
-
-                        if perfumes.isEmpty {
-                            EmptyStateView(onAdd: showAddPerfumeFlow)
-                                .padding(.top, 28)
-                        } else {
-                            catalogueHeader
-                            perfumeGrid
-                        }
+                    if perfumes.isEmpty {
+                        EmptyStateView(onAdd: showAddPerfumeFlow)
+                            .padding(.top, 28)
+                    } else {
+                        catalogueHeader
+                        perfumeGrid
                     }
-                    .padding(.horizontal, 18)
-                    .padding(.top, 8)
-                    .padding(.bottom, 28)
                 }
-                .scrollIndicators(.hidden)
+                .padding(.horizontal, 18)
+                .padding(.top, 8)
+                .padding(.bottom, 28)
             }
+            .scrollIndicators(.hidden)
+            .background(PerfumePaperBackground())
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(
                 isPresented: Binding(

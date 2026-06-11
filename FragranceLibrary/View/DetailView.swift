@@ -58,6 +58,33 @@ struct DetailView: View {
                     }
                     .padding(.top, 4)
 
+                    // Scene compass radar chart
+                    if perfume.hasRadarScores {
+                        VStack(spacing: 6) {
+                            Divider().background(Color.perfumeBorder)
+
+                            RadarChartView(
+                                axes: perfume.radarAxes,
+                                color: Color.perfumeAccent,
+                                title: "SCENE COMPASS"
+                            )
+                            .frame(maxWidth: .infinity)
+
+                            if !perfume.strategyLine.isEmpty {
+                                Text("「 \(perfume.strategyLine) 」")
+                                    .font(PerfumeType.bodyMedium(13))
+                                    .foregroundStyle(Color.perfumeAccent)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .padding(.top, 4)
+                            }
+                        }
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.perfumeCard)
+                        )
+                    }
+
                     actions
                 }
                 .padding(24)

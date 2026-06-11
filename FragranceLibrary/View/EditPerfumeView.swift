@@ -12,6 +12,13 @@ struct EditPerfumeView: View {
     @State private var concentration: String
     @State private var volume: String
     @State private var notes: String
+    @State private var radarElder: Double
+    @State private var radarDate: Double
+    @State private var radarGirlApproved: Double
+    @State private var radarOffice: Double
+    @State private var radarSelf: Double
+    @State private var radarImpression: Double
+    @State private var strategyLine: String
     @State private var validationMessage: String?
     @State private var saveFailed = false
 
@@ -40,6 +47,13 @@ struct EditPerfumeView: View {
         _concentration = State(initialValue: perfume.concentration)
         _volume = State(initialValue: perfume.volume)
         _notes = State(initialValue: perfume.notes)
+        _radarElder = State(initialValue: perfume.radarElder)
+        _radarDate = State(initialValue: perfume.radarDate)
+        _radarGirlApproved = State(initialValue: perfume.radarGirlApproved)
+        _radarOffice = State(initialValue: perfume.radarOffice)
+        _radarSelf = State(initialValue: perfume.radarSelf)
+        _radarImpression = State(initialValue: perfume.radarImpression)
+        _strategyLine = State(initialValue: perfume.strategyLine)
     }
 
     var body: some View {
@@ -91,6 +105,46 @@ struct EditPerfumeView: View {
                             text: $notes,
                             field: .notes,
                             isMultiline: true
+                        )
+                    }
+
+                    // Scene compass
+                    VStack(alignment: .leading, spacing: 14) {
+                        Divider().background(Color.perfumeBorder)
+
+                        Text("SCENE COMPASS")
+                            .font(PerfumeType.label(10))
+                            .tracking(2.2)
+                            .foregroundStyle(Color.perfumeTextSecondary)
+
+                        radarSlider(icon: "👴", label: "长辈好感", value: $radarElder)
+                        radarSlider(icon: "💕", label: "约会引力", value: $radarDate)
+                        radarSlider(icon: "👯", label: "闺蜜推荐", value: $radarGirlApproved)
+                        radarSlider(icon: "💼", label: "职场安全", value: $radarOffice)
+                        radarSlider(icon: "🧘", label: "独处疗愈", value: $radarSelf)
+                        radarSlider(icon: "✨", label: "初见印象", value: $radarImpression)
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text("Strategy line")
+                                    .font(.caption.weight(.medium))
+                                    .foregroundStyle(Color.perfumeTextSecondary)
+                                Spacer()
+                                Text("\(strategyLine.count)/12")
+                                    .font(.caption)
+                                    .foregroundStyle(strategyLine.count > 12 ? Color.perfumeDanger : Color.perfumeTextSecondary.opacity(0.6))
+                            }
+                            TextField("通勤隐形盔甲", text: $strategyLine)
+                                .font(.body)
+                                .foregroundStyle(Color.perfumeText)
+                                .onChange(of: strategyLine) { _, new in
+                                    if new.count > 12 { strategyLine = String(new.prefix(12)) }
+                                }
+                        }
+                        .padding(14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(Color.perfumeCard)
                         )
                     }
 
@@ -200,6 +254,31 @@ struct EditPerfumeView: View {
         )
     }
 
+    private func radarSlider(icon: String, label: String, value: Binding<Double>) -> some View {
+        HStack(spacing: 12) {
+            Text(icon)
+                .font(.title3)
+
+            Text(label)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(Color.perfumeTextSecondary)
+                .frame(width: 56, alignment: .leading)
+
+            Slider(value: value, in: 0...5, step: 0.5)
+                .tint(Color.perfumeAccent)
+
+            Text(String(format: "%.1f", value.wrappedValue))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(value.wrappedValue > 0 ? Color.perfumeAccent : Color.perfumeTextSecondary.opacity(0.5))
+                .frame(width: 28, alignment: .trailing)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.perfumeCard)
+        )
+    }
+
     private func save() {
         guard canSave else {
             validationMessage = "Add at least a brand or perfume name before saving."
@@ -214,6 +293,13 @@ struct EditPerfumeView: View {
         perfume.concentration = concentration.trimmingCharacters(in: .whitespacesAndNewlines)
         perfume.volume = volume.trimmingCharacters(in: .whitespacesAndNewlines)
         perfume.notes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        perfume.radarElder = radarElder
+        perfume.radarDate = radarDate
+        perfume.radarGirlApproved = radarGirlApproved
+        perfume.radarOffice = radarOffice
+        perfume.radarSelf = radarSelf
+        perfume.radarImpression = radarImpression
+        perfume.strategyLine = strategyLine.trimmingCharacters(in: .whitespacesAndNewlines)
         perfume.updatedAt = Date()
 
         do {

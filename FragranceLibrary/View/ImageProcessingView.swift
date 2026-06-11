@@ -2,13 +2,14 @@ import SwiftUI
 
 struct ImageProcessingView: View {
     let originalImage: UIImage
-    let onContinue: (UIImage, UIImage?, OCRResult?) -> Void
+    let onContinue: (UIImage, UIImage?, OCRResult?, RadarAnalysis?) -> Void
 
     @Environment(\.dismiss) private var dismiss
 
     @State private var processedImage: UIImage?
     @State private var rawCutoutImage: UIImage?
     @State private var ocrResult: OCRResult?
+    @State private var aiAnalysis: RadarAnalysis?
     @State private var progress: Double = 0
     @State private var currentStep: ProcessingStep = .compressing
     @State private var isComplete = false
@@ -168,7 +169,7 @@ struct ImageProcessingView: View {
             Button {
                 Haptic.medium()
                 if let processed = processedImage {
-                    onContinue(processed, rawCutoutImage, ocrResult)
+                    onContinue(processed, rawCutoutImage, ocrResult, aiAnalysis)
                 }
             } label: {
                 Text("Continue to Details")
@@ -357,10 +358,20 @@ struct ImageProcessingView: View {
 
         let ocr = await bestOCR
 
+        // AI analysis — non-blocking, silent skip on failure
+        var analysis: RadarAnalysis? = nil
+        let text = ocr.fullText
+        if !text.isEmpty {
+            await MainActor.run { currentStep = .aiAnalyze }
+            await animateProgress(to: 0.97)
+            analysis = await DeepSeekService().analyze(ocrText: text)
+        }
+
         await MainActor.run {
             processedImage = rendered
             rawCutoutImage = cutout
             self.ocrResult = ocr
+            self.aiAnalysis = analysis
             progress = 1.0
             currentStep = .rendering
             isComplete = true
@@ -413,10 +424,19 @@ struct ImageProcessingView: View {
 
         let ocr = await bestOCR
 
+        var analysis: RadarAnalysis? = nil
+        let text = ocr.fullText
+        if !text.isEmpty {
+            await MainActor.run { currentStep = .aiAnalyze }
+            await animateProgress(to: 0.97)
+            analysis = await DeepSeekService().analyze(ocrText: text)
+        }
+
         await MainActor.run {
             processedImage = rendered
             rawCutoutImage = cutout
             self.ocrResult = ocr
+            self.aiAnalysis = analysis
             progress = 1.0
             currentStep = .rendering
             isComplete = true
@@ -458,6 +478,7 @@ enum ProcessingStep: Int, CaseIterable, Identifiable {
     case cropping
     case enhancing
     case rendering
+    case aiAnalyze
 
     var id: Int { rawValue }
 
@@ -467,6 +488,7 @@ enum ProcessingStep: Int, CaseIterable, Identifiable {
         case .cropping: return "Finding bottle region"
         case .enhancing: return "Enhancing label visibility"
         case .rendering: return "Building transparent cutout"
+        case .aiAnalyze: return "AI scoring your perfume"
         }
     }
 

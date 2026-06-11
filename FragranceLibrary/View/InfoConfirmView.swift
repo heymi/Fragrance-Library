@@ -55,22 +55,28 @@ struct InfoConfirmView: View {
         rawCutoutImage ?? currentProcessedImage
     }
 
+    private let aiAnalysis: RadarAnalysis?
+
     init(
         originalImage: UIImage? = nil,
         processedImage: UIImage,
         rawCutoutImage: UIImage? = nil,
         ocrResult: OCRResult?,
+        aiAnalysis: RadarAnalysis? = nil,
         onSaved: @escaping () -> Void
     ) {
         self.originalImage = originalImage
+        self.aiAnalysis = aiAnalysis
         self.ocrResult = ocrResult
         self.onSaved = onSaved
         _rawCutoutImage = State(initialValue: rawCutoutImage)
-        _brand = State(initialValue: ocrResult?.brand ?? "")
-        _name = State(initialValue: ocrResult?.name ?? "")
+        // Pre-fill from AI if available, otherwise from OCR
+        let cleanedName = aiAnalysis?.cleaned ?? ""
+        _brand = State(initialValue: cleanedName.isEmpty ? (ocrResult?.brand ?? "") : cleanedName)
+        _name = State(initialValue: cleanedName.isEmpty ? (ocrResult?.name ?? "") : "")
         _concentration = State(initialValue: ocrResult?.concentration ?? "")
         _volume = State(initialValue: ocrResult?.volume ?? "")
-        _notes = State(initialValue: "")
+        _notes = State(initialValue: aiAnalysis?.review ?? "")
         _currentProcessedImage = State(initialValue: processedImage)
     }
 
@@ -106,6 +112,37 @@ struct InfoConfirmView: View {
                     }
 
                 detectionSummary
+
+                if let analysis = aiAnalysis {
+                    VStack(spacing: 12) {
+                        HStack(spacing: 6) {
+                            Text("✨")
+                            Text("AI scored this perfume")
+                                .font(.caption.weight(.semibold))
+                        }
+                        .foregroundStyle(Color.perfumeAccent)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color.perfumeAccent.opacity(0.1))
+                        )
+
+                        // Compact radar preview
+                        RadarChartView(
+                            axes: [
+                                RadarChartAxis(label: "👴", value: analysis.elder),
+                                RadarChartAxis(label: "💕", value: analysis.date),
+                                RadarChartAxis(label: "👯", value: analysis.girlApproved),
+                                RadarChartAxis(label: "💼", value: analysis.office),
+                                RadarChartAxis(label: "🧘", value: analysis.selfComfort),
+                                RadarChartAxis(label: "✨", value: analysis.impression),
+                            ],
+                            color: Color.perfumeAccent
+                        )
+                        .frame(width: 200, height: 200)
+                    }
+                }
 
                 // Image refinement tools
                 VStack(spacing: 6) {
@@ -403,7 +440,14 @@ struct InfoConfirmView: View {
             notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
             processedImageFilename: processedFilename,
             originalImageFilename: originalFilename,
-            ocrText: ocrResult?.fullText
+            ocrText: ocrResult?.fullText,
+            radarElder: aiAnalysis?.elder ?? 0,
+            radarDate: aiAnalysis?.date ?? 0,
+            radarGirlApproved: aiAnalysis?.girlApproved ?? 0,
+            radarOffice: aiAnalysis?.office ?? 0,
+            radarSelf: aiAnalysis?.selfComfort ?? 0,
+            radarImpression: aiAnalysis?.impression ?? 0,
+            strategyLine: aiAnalysis?.review.prefix(12).trimmingCharacters(in: .whitespaces) ?? ""
         )
 
         modelContext.insert(perfume)

@@ -12,8 +12,10 @@
 		211F917AB919AA454290ACB7 /* PerfumeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC276836CE0ADA92F7CCE41 /* PerfumeCard.swift */; };
 		22254F06C1CCE6D3ED91A49B /* ImageStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86EC2BD97B44FAD1F0179189 /* ImageStorageManager.swift */; };
 		2A0CCE6CCB59266ED8DA140D /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F142207E10BDD027CE46C01 /* ImageProcessor.swift */; };
+		36294487893B0355CCD14D7F /* DeepSeekService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 680B393ECF3DD761D850E180 /* DeepSeekService.swift */; };
 		40DCB8236DFBC54E5E7E8FA7 /* TextParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA059B362F55D77B87495B6 /* TextParser.swift */; };
 		5D5F1CEB541170D3A7569F09 /* Perfume.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E2EADBF1347ECD6AA57744 /* Perfume.swift */; };
+		61D4CB72CBF881674A040684 /* APIKey.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DD52AACCC1B8EC3CD95C8AC /* APIKey.generated.swift */; };
 		74386B4325C13D85945831A3 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 654B37CF187F82D5133111F0 /* DetailView.swift */; };
 		8638DFEE08E4F542A5A0ABE6 /* InfoConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20F93766C68E32BECBC892C /* InfoConfirmView.swift */; };
 		8E8EA795FE048A305F103770 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A145609EB44A40091842D90 /* HomeView.swift */; };
@@ -27,6 +29,7 @@
 		C3CD796E0B5094AA2308F41D /* AddPerfumeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D835B97891C21E2EF2278AD /* AddPerfumeView.swift */; };
 		D80BC84DC340099A59B38806 /* EditPerfumeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A84C586D0DCFF7162465854 /* EditPerfumeView.swift */; };
 		E164DCAB645A756E0B6AF734 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D212E938A153187534EF7ED /* EmptyStateView.swift */; };
+		E5B645FDA597BC3999C5926A /* RadarChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A139931648BDD014566EB3B8 /* RadarChartView.swift */; };
 		EA55BB666C92F2DC3A7CA7B2 /* PerfumeGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FD8CCD5B9B3D0243141311 /* PerfumeGalleryView.swift */; };
 		F8D28D189A957D6A64CE559A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED8EDB597948B5B07B4894 /* Theme.swift */; };
 /* End PBXBuildFile section */
@@ -41,14 +44,18 @@
 		3A145609EB44A40091842D90 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		4AA059B362F55D77B87495B6 /* TextParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextParser.swift; sourceTree = "<group>"; };
 		58079551953263314CA81040 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		5DD52AACCC1B8EC3CD95C8AC /* APIKey.generated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.generated.swift; sourceTree = "<group>"; };
 		5F142207E10BDD027CE46C01 /* ImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		654B37CF187F82D5133111F0 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
+		680B393ECF3DD761D850E180 /* DeepSeekService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekService.swift; sourceTree = "<group>"; };
 		7529AA060AD76E01802743CA /* ImageProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessingView.swift; sourceTree = "<group>"; };
 		7D835B97891C21E2EF2278AD /* AddPerfumeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPerfumeView.swift; sourceTree = "<group>"; };
+		8383148F8C4FA481E868F3C7 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		86EC2BD97B44FAD1F0179189 /* ImageStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageStorageManager.swift; sourceTree = "<group>"; };
 		8C7EEC2E73B61D84835525A9 /* ManualCutoutEraseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualCutoutEraseView.swift; sourceTree = "<group>"; };
 		8DED8EDB597948B5B07B4894 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		9D212E938A153187534EF7ED /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		A139931648BDD014566EB3B8 /* RadarChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarChartView.swift; sourceTree = "<group>"; };
 		BB06600488623F40C89C2BEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BBC276836CE0ADA92F7CCE41 /* PerfumeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerfumeCard.swift; sourceTree = "<group>"; };
 		D91BEA0C8FB9E6AB9997280D /* AddFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFlowView.swift; sourceTree = "<group>"; };
@@ -70,6 +77,15 @@
 				868C1A271FA58AA325DF8490 /* View */,
 			);
 			path = FragranceLibrary;
+			sourceTree = "<group>";
+		};
+		2AF2EF58F6004D086619150C /* Fragrance Library */ = {
+			isa = PBXGroup;
+			children = (
+				8383148F8C4FA481E868F3C7 /* Config.xcconfig */,
+			);
+			name = "Fragrance Library";
+			path = .;
 			sourceTree = "<group>";
 		};
 		71BE7AC483971DE3F6196058 /* Model */ = {
@@ -96,6 +112,7 @@
 				8C7EEC2E73B61D84835525A9 /* ManualCutoutEraseView.swift */,
 				BBC276836CE0ADA92F7CCE41 /* PerfumeCard.swift */,
 				36FD8CCD5B9B3D0243141311 /* PerfumeGalleryView.swift */,
+				A139931648BDD014566EB3B8 /* RadarChartView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -103,6 +120,8 @@
 		99CB56012A84B92B6743143B /* Service */ = {
 			isa = PBXGroup;
 			children = (
+				5DD52AACCC1B8EC3CD95C8AC /* APIKey.generated.swift */,
+				680B393ECF3DD761D850E180 /* DeepSeekService.swift */,
 				5F142207E10BDD027CE46C01 /* ImageProcessor.swift */,
 				86EC2BD97B44FAD1F0179189 /* ImageStorageManager.swift */,
 				0EC6A9C10BAF31A9B8FC1AF3 /* OCRService.swift */,
@@ -130,6 +149,7 @@
 		FD3D1825DBFF59637C41E1F2 = {
 			isa = PBXGroup;
 			children = (
+				2AF2EF58F6004D086619150C /* Fragrance Library */,
 				255B0F0FC5A49763288FE612 /* FragranceLibrary */,
 				E330BD9A03A580A371E7D52E /* Products */,
 			);
@@ -142,6 +162,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 84EED151972323F0506B9198 /* Build configuration list for PBXNativeTarget "FragranceLibrary" */;
 			buildPhases = (
+				66A951FCC0F3E21012EB92F6 /* Generate API Key */,
 				483BA92359CE3060425CBF9A /* SwiftLint */,
 				412C4532F8ED583FBEFEF659 /* Sources */,
 				4EB00608244B68AF72FC7D22 /* Resources */,
@@ -223,6 +244,26 @@
 			shellPath = /bin/sh;
 			shellScript = "if which swiftlint > /dev/null; then\n  swiftlint --config \"${SRCROOT}/.swiftlint.yml\" 2>/dev/null || true\nfi\n";
 		};
+		66A951FCC0F3E21012EB92F6 /* Generate API Key */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Config.xcconfig",
+			);
+			name = "Generate API Key";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/FragranceLibrary/Service/APIKey.generated.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "echo \"let DEEPSEEK_API_KEY = \\\"${DEEPSEEK_API_KEY}\\\"\" > \"${SRCROOT}/FragranceLibrary/Service/APIKey.generated.swift\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -230,8 +271,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61D4CB72CBF881674A040684 /* APIKey.generated.swift in Sources */,
 				A6666D8C341EF655760D5B41 /* AddFlowView.swift in Sources */,
 				C3CD796E0B5094AA2308F41D /* AddPerfumeView.swift in Sources */,
+				36294487893B0355CCD14D7F /* DeepSeekService.swift in Sources */,
 				74386B4325C13D85945831A3 /* DetailView.swift in Sources */,
 				D80BC84DC340099A59B38806 /* EditPerfumeView.swift in Sources */,
 				E164DCAB645A756E0B6AF734 /* EmptyStateView.swift in Sources */,
@@ -248,6 +291,7 @@
 				5D5F1CEB541170D3A7569F09 /* Perfume.swift in Sources */,
 				211F917AB919AA454290ACB7 /* PerfumeCard.swift in Sources */,
 				EA55BB666C92F2DC3A7CA7B2 /* PerfumeGalleryView.swift in Sources */,
+				E5B645FDA597BC3999C5926A /* RadarChartView.swift in Sources */,
 				40DCB8236DFBC54E5E7E8FA7 /* TextParser.swift in Sources */,
 				F8D28D189A957D6A64CE559A /* Theme.swift in Sources */,
 			);
@@ -258,6 +302,7 @@
 /* Begin XCBuildConfiguration section */
 		4DD7A35A9383449C8FDB4D9B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8383148F8C4FA481E868F3C7 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -410,6 +455,7 @@
 		};
 		980E0ADB78E3D0456E4EF606 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8383148F8C4FA481E868F3C7 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
