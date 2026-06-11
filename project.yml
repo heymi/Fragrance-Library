@@ -53,3 +53,15 @@ targets:
             swiftlint --config "${SRCROOT}/.swiftlint.yml" 2>/dev/null || true
           fi
         basedOnDependencyAnalysis: false
+  FragranceLibraryTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: FragranceLibraryTests
+        type: group
+    dependencies:
+      - target: FragranceLibrary
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.fragrancelibrary.app.tests
+        GENERATE_INFOPLIST_FILE: "YES"

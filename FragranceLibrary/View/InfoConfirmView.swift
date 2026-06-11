@@ -15,6 +15,7 @@ struct InfoConfirmView: View {
     @State private var notes: String
     @State private var currentProcessedImage: UIImage
     @State private var rawCutoutImage: UIImage?
+    @State private var imageQuality: CutoutQualityReport
     @State private var fieldAppeared: [Bool] = [false, false, false, false, false]
     @State private var isSaving = false
     @State private var isRefining = false
@@ -59,8 +60,7 @@ struct InfoConfirmView: View {
 
     init(
         originalImage: UIImage? = nil,
-        processedImage: UIImage,
-        rawCutoutImage: UIImage? = nil,
+        processedResult: ProcessedPerfumeImage,
         ocrResult: OCRResult?,
         aiAnalysis: RadarAnalysis? = nil,
         onSaved: @escaping () -> Void
@@ -69,7 +69,8 @@ struct InfoConfirmView: View {
         self.aiAnalysis = aiAnalysis
         self.ocrResult = ocrResult
         self.onSaved = onSaved
-        _rawCutoutImage = State(initialValue: rawCutoutImage)
+        _rawCutoutImage = State(initialValue: processedResult.rawCutoutImage)
+        _imageQuality = State(initialValue: processedResult.quality)
         // Pre-fill from AI if available, otherwise from OCR
         let cleanedName = aiAnalysis?.cleaned ?? ""
         _brand = State(initialValue: cleanedName.isEmpty ? (ocrResult?.brand ?? "") : cleanedName)
@@ -77,7 +78,7 @@ struct InfoConfirmView: View {
         _concentration = State(initialValue: ocrResult?.concentration ?? "")
         _volume = State(initialValue: ocrResult?.volume ?? "")
         _notes = State(initialValue: aiAnalysis?.review ?? "")
-        _currentProcessedImage = State(initialValue: processedImage)
+        _currentProcessedImage = State(initialValue: processedResult.displayImage)
     }
 
     var body: some View {
@@ -110,6 +111,8 @@ struct InfoConfirmView: View {
                             }
                         }
                     }
+
+                imageQualitySummary
 
                 detectionSummary
 
@@ -186,7 +189,7 @@ struct InfoConfirmView: View {
 
                     fieldRow(
                         label: "Name",
-                        icon: "spray.bottle.fill",
+                        icon: "tag.fill",
                         text: $name,
                         field: .name,
                         index: 1
@@ -229,6 +232,14 @@ struct InfoConfirmView: View {
                         .padding(.horizontal, 24)
                 }
 
+                if imageQuality.confidence == .low {
+                    Label("This image may not be a complete bottle cutout. Refine the bottle area before saving when possible.", systemImage: "exclamationmark.triangle.fill")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(Color.perfumeDanger)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                }
+
                 saveButton
                     .offset(x: shakeOffset)
                     .padding(.horizontal, 24)
@@ -264,16 +275,54 @@ struct InfoConfirmView: View {
         }
         .fullScreenCover(isPresented: $showManualErase) {
             ManualCutoutEraseView(image: eraseSourceImage) { editedImage in
-                rawCutoutImage = editedImage
-                if let restyled = ImageProcessor().renderCutoutCardStyle(editedImage) {
-                    currentProcessedImage = restyled
+                if let result = PerfumeImageProcessingPipeline()
+                    .restyleEditedCutout(editedImage) {
+                    rawCutoutImage = result.rawCutoutImage
+                    currentProcessedImage = result.displayImage
+                    imageQuality = result.quality
                 } else {
+                    rawCutoutImage = editedImage
                     currentProcessedImage = editedImage
+                    imageQuality = CutoutQualityReport(
+                        confidence: .low,
+                        score: 35,
+                        reasons: ["Manual cleanup could not be restyled."],
+                        suggestedAction: .review
+                    )
                 }
                 validationMessage = nil
                 showManualErase = false
             }
         }
+    }
+
+    private var imageQualitySummary: some View {
+        VStack(spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: imageQuality.confidence == .high ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+                Text(imageQuality.confidence.title)
+                    .font(.caption.weight(.semibold))
+                Text("\(imageQuality.score)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.perfumeTextSecondary)
+            }
+            .foregroundStyle(imageQuality.confidence == .high ? Color.perfumeAccent : Color.perfumeDanger)
+
+            if let reason = imageQuality.reasons.first {
+                Text(reason)
+                    .font(.caption)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Color.perfumeTextSecondary)
+                    .padding(.horizontal, 28)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill((imageQuality.confidence == .high ? Color.perfumeAccent : Color.perfumeDanger).opacity(0.08))
+        )
+        .padding(.horizontal, 24)
     }
 
     @ViewBuilder
@@ -494,14 +543,8 @@ struct InfoConfirmView: View {
         validationMessage = nil
 
         Task {
-            let processor = ImageProcessor()
-            let normalized = processor.normalizeOrientation(originalImage)
-            guard let compressed = processor.downscale(normalized, maxWidth: 1024),
-                  let cutout = await processor.manualBottleRegionCutout(
-                    compressed,
-                    normalizedRect: normalizedRect
-                  ),
-                  let rendered = processor.renderCutoutCardStyle(cutout) else {
+            guard let result = await PerfumeImageProcessingPipeline()
+                .process(originalImage, mode: .manualRegion(normalizedRect)) else {
                 await MainActor.run {
                     isRefining = false
                     validationMessage = "Could not isolate the bottle in that area. Try a tighter frame around only the perfume."
@@ -512,8 +555,9 @@ struct InfoConfirmView: View {
 
             await MainActor.run {
                 withAnimation(.galleryBloom) {
-                    rawCutoutImage = cutout
-                    currentProcessedImage = rendered
+                    rawCutoutImage = result.rawCutoutImage
+                    currentProcessedImage = result.displayImage
+                    imageQuality = result.quality
                     isRefining = false
                 }
                 Haptic.success()
@@ -525,7 +569,18 @@ struct InfoConfirmView: View {
 #Preview {
     NavigationStack {
         InfoConfirmView(
-            processedImage: UIImage(systemName: "photo")!,
+            processedResult: ProcessedPerfumeImage(
+                displayImage: UIImage(systemName: "photo")!,
+                rawCutoutImage: nil,
+                ocrImages: [],
+                quality: CutoutQualityReport(
+                    confidence: .high,
+                    score: 90,
+                    reasons: [],
+                    suggestedAction: .accept
+                ),
+                source: .automaticOriginalMask
+            ),
             ocrResult: OCRResult(
                 fullText: "CHANEL\nBLEU DE CHANEL\nEAU DE PARFUM\n100 ml",
                 brand: "Chanel",

@@ -20,7 +20,7 @@ struct EmptyStateView: View {
                     .shadow(color: Color.perfumeShadow, radius: 10, y: 6)
 
                 VStack(spacing: 18) {
-                    Image(systemName: "spray.bottle")
+                    Image(systemName: "drop")
                         .font(.system(size: 58, weight: .ultraLight))
                         .foregroundStyle(Color.perfumeAccent.opacity(0.75))
                         .offset(y: iconFloat ? -5 : 5)

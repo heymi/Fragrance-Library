@@ -142,9 +142,6 @@ struct HomeView: View {
                     index: index,
                     onOpenDetail: {
                         detailPerfumeID = perfume.id
-                    },
-                    onOpenImage: {
-                        galleryStartID = perfume.id
                     }
                 )
                 .contextMenu {

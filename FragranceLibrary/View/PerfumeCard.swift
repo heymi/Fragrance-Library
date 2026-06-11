@@ -4,18 +4,16 @@ struct PerfumeCard: View {
     let perfume: Perfume
     let index: Int
     var onOpenDetail: () -> Void = {}
-    var onOpenImage: () -> Void = {}
 
     @State private var appeared = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 9) {
-            Button(action: onOpenImage) {
+            Button(action: onOpenDetail) {
                 imageView
                     .aspectRatio(0.78, contentMode: .fit)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("View large image of \(perfume.displayTitle)")
 
             Button(action: onOpenDetail) {
                 infoBlock
@@ -71,7 +69,7 @@ struct PerfumeCard: View {
                     .aspectRatio(contentMode: .fit)
                     .padding(12)
             } else {
-                Image(systemName: "spray.bottle")
+                Image(systemName: "drop")
                     .font(.system(size: 34, weight: .ultraLight))
                     .foregroundStyle(Color.perfumeTextSecondary.opacity(0.48))
             }

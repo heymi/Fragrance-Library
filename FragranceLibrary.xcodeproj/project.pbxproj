@@ -18,9 +18,11 @@
 		61D4CB72CBF881674A040684 /* APIKey.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DD52AACCC1B8EC3CD95C8AC /* APIKey.generated.swift */; };
 		74386B4325C13D85945831A3 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 654B37CF187F82D5133111F0 /* DetailView.swift */; };
 		8638DFEE08E4F542A5A0ABE6 /* InfoConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20F93766C68E32BECBC892C /* InfoConfirmView.swift */; };
+		87C6041683EF50CF85241C49 /* PerfumeImageProcessingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AB137F626321E8BE391CB10 /* PerfumeImageProcessingPipeline.swift */; };
 		8E8EA795FE048A305F103770 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A145609EB44A40091842D90 /* HomeView.swift */; };
 		916406D0A0BB398504C6BD55 /* FragranceLibraryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E116DC83ED9622F7415924BF /* FragranceLibraryApp.swift */; };
 		92660E8BE8A615CBADB74F47 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC6A9C10BAF31A9B8FC1AF3 /* OCRService.swift */; };
+		94A78DCCB7504871B1B6BE2C /* CutoutQualityReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3E26E3CE8796D960256753 /* CutoutQualityReportTests.swift */; };
 		968D3B2B98B6978008C6EFA1 /* ImagePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CD0559DA2B2008BF45674AE /* ImagePreviewView.swift */; };
 		A2E423AFDCAC0F75D36097F7 /* ManualCutoutEraseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C7EEC2E73B61D84835525A9 /* ManualCutoutEraseView.swift */; };
 		A6666D8C341EF655760D5B41 /* AddFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D91BEA0C8FB9E6AB9997280D /* AddFlowView.swift */; };
@@ -34,6 +36,16 @@
 		F8D28D189A957D6A64CE559A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DED8EDB597948B5B07B4894 /* Theme.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		5C3D18F12E8D49DA00BD5E61 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 529E88C2ECEDCE074257B366 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7B6289DA6E0552852C053ADE;
+			remoteInfo = FragranceLibrary;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		0CD0559DA2B2008BF45674AE /* ImagePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewView.swift; sourceTree = "<group>"; };
 		0EC6A9C10BAF31A9B8FC1AF3 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
@@ -43,17 +55,20 @@
 		36FD8CCD5B9B3D0243141311 /* PerfumeGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerfumeGalleryView.swift; sourceTree = "<group>"; };
 		3A145609EB44A40091842D90 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		4AA059B362F55D77B87495B6 /* TextParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextParser.swift; sourceTree = "<group>"; };
+		4AB137F626321E8BE391CB10 /* PerfumeImageProcessingPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerfumeImageProcessingPipeline.swift; sourceTree = "<group>"; };
 		58079551953263314CA81040 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5DD52AACCC1B8EC3CD95C8AC /* APIKey.generated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.generated.swift; sourceTree = "<group>"; };
 		5F142207E10BDD027CE46C01 /* ImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		654B37CF187F82D5133111F0 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		680B393ECF3DD761D850E180 /* DeepSeekService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekService.swift; sourceTree = "<group>"; };
 		7529AA060AD76E01802743CA /* ImageProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessingView.swift; sourceTree = "<group>"; };
+		7CFDEA0357F75A4B021DB08A /* FragranceLibraryTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FragranceLibraryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D835B97891C21E2EF2278AD /* AddPerfumeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPerfumeView.swift; sourceTree = "<group>"; };
 		8383148F8C4FA481E868F3C7 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		86EC2BD97B44FAD1F0179189 /* ImageStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageStorageManager.swift; sourceTree = "<group>"; };
 		8C7EEC2E73B61D84835525A9 /* ManualCutoutEraseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualCutoutEraseView.swift; sourceTree = "<group>"; };
 		8DED8EDB597948B5B07B4894 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		8F3E26E3CE8796D960256753 /* CutoutQualityReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CutoutQualityReportTests.swift; sourceTree = "<group>"; };
 		9D212E938A153187534EF7ED /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		A139931648BDD014566EB3B8 /* RadarChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarChartView.swift; sourceTree = "<group>"; };
 		BB06600488623F40C89C2BEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -125,6 +140,7 @@
 				5F142207E10BDD027CE46C01 /* ImageProcessor.swift */,
 				86EC2BD97B44FAD1F0179189 /* ImageStorageManager.swift */,
 				0EC6A9C10BAF31A9B8FC1AF3 /* OCRService.swift */,
+				4AB137F626321E8BE391CB10 /* PerfumeImageProcessingPipeline.swift */,
 				4AA059B362F55D77B87495B6 /* TextParser.swift */,
 			);
 			path = Service;
@@ -138,10 +154,19 @@
 			path = Extension;
 			sourceTree = "<group>";
 		};
+		CD416CF78A045D3619381E21 /* FragranceLibraryTests */ = {
+			isa = PBXGroup;
+			children = (
+				8F3E26E3CE8796D960256753 /* CutoutQualityReportTests.swift */,
+			);
+			path = FragranceLibraryTests;
+			sourceTree = "<group>";
+		};
 		E330BD9A03A580A371E7D52E /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				F5E99405913BD5D7C4953A77 /* FragranceLibrary.app */,
+				7CFDEA0357F75A4B021DB08A /* FragranceLibraryTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -151,6 +176,7 @@
 			children = (
 				2AF2EF58F6004D086619150C /* Fragrance Library */,
 				255B0F0FC5A49763288FE612 /* FragranceLibrary */,
+				CD416CF78A045D3619381E21 /* FragranceLibraryTests */,
 				E330BD9A03A580A371E7D52E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -177,6 +203,24 @@
 			productName = FragranceLibrary;
 			productReference = F5E99405913BD5D7C4953A77 /* FragranceLibrary.app */;
 			productType = "com.apple.product-type.application";
+		};
+		89F67A1A740C6A3B1858FE28 /* FragranceLibraryTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B3F5AE11C21FE12F0D8D355 /* Build configuration list for PBXNativeTarget "FragranceLibraryTests" */;
+			buildPhases = (
+				6B46B92311FA0B03A4AFFC5C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2DE56079479DA40576383660 /* PBXTargetDependency */,
+			);
+			name = FragranceLibraryTests;
+			packageProductDependencies = (
+			);
+			productName = FragranceLibraryTests;
+			productReference = 7CFDEA0357F75A4B021DB08A /* FragranceLibraryTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -208,6 +252,7 @@
 			projectRoot = "";
 			targets = (
 				7B6289DA6E0552852C053ADE /* FragranceLibrary */,
+				89F67A1A740C6A3B1858FE28 /* FragranceLibraryTests */,
 			);
 		};
 /* End PBXProject section */
@@ -291,13 +336,30 @@
 				5D5F1CEB541170D3A7569F09 /* Perfume.swift in Sources */,
 				211F917AB919AA454290ACB7 /* PerfumeCard.swift in Sources */,
 				EA55BB666C92F2DC3A7CA7B2 /* PerfumeGalleryView.swift in Sources */,
+				87C6041683EF50CF85241C49 /* PerfumeImageProcessingPipeline.swift in Sources */,
 				E5B645FDA597BC3999C5926A /* RadarChartView.swift in Sources */,
 				40DCB8236DFBC54E5E7E8FA7 /* TextParser.swift in Sources */,
 				F8D28D189A957D6A64CE559A /* Theme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6B46B92311FA0B03A4AFFC5C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				94A78DCCB7504871B1B6BE2C /* CutoutQualityReportTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2DE56079479DA40576383660 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7B6289DA6E0552852C053ADE /* FragranceLibrary */;
+			targetProxy = 5C3D18F12E8D49DA00BD5E61 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		4DD7A35A9383449C8FDB4D9B /* Release */ = {
@@ -453,6 +515,23 @@
 			};
 			name = Release;
 		};
+		95B3847A155DB48B4AE34F2A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fragrancelibrary.app.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FragranceLibrary.app/FragranceLibrary";
+			};
+			name = Release;
+		};
 		980E0ADB78E3D0456E4EF606 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 8383148F8C4FA481E868F3C7 /* Config.xcconfig */;
@@ -485,9 +564,35 @@
 			};
 			name = Debug;
 		};
+		A1AB46374FD0D1F4957A9BE2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fragrancelibrary.app.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FragranceLibrary.app/FragranceLibrary";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0B3F5AE11C21FE12F0D8D355 /* Build configuration list for PBXNativeTarget "FragranceLibraryTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1AB46374FD0D1F4957A9BE2 /* Debug */,
+				95B3847A155DB48B4AE34F2A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		2A82D447D826A5BF14956D44 /* Build configuration list for PBXProject "FragranceLibrary" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

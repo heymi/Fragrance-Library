@@ -151,7 +151,7 @@ private struct GalleryPage: View {
                     .opacity(appeared ? 1 : 0)
                     .animation(.galleryBloom.delay(0.06), value: appeared)
             } else {
-                Image(systemName: "spray.bottle")
+                Image(systemName: "drop")
                     .font(.system(size: 64, weight: .ultraLight))
                     .foregroundStyle(Color.perfumeTextSecondary.opacity(0.5))
             }

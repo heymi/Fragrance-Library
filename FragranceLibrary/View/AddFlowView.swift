@@ -4,8 +4,7 @@ struct AddFlowView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedImage: UIImage?
-    @State private var processedImage: UIImage?
-    @State private var rawCutoutImage: UIImage?
+    @State private var processedResult: ProcessedPerfumeImage?
     @State private var ocrResult: OCRResult?
     @State private var aiAnalysis: RadarAnalysis?
     @State private var showProcessing = false
@@ -19,9 +18,8 @@ struct AddFlowView: View {
             }
             .navigationDestination(isPresented: $showProcessing) {
                 if let image = selectedImage {
-                    ImageProcessingView(originalImage: image) { rendered, rawCutout, ocr, analysis in
-                        processedImage = rendered
-                        rawCutoutImage = rawCutout
+                    ImageProcessingView(originalImage: image) { result, ocr, analysis in
+                        processedResult = result
                         ocrResult = ocr
                         aiAnalysis = analysis
                         showConfirm = true
@@ -29,11 +27,10 @@ struct AddFlowView: View {
                 }
             }
             .navigationDestination(isPresented: $showConfirm) {
-                if let processed = processedImage {
+                if let result = processedResult {
                     InfoConfirmView(
                         originalImage: selectedImage,
-                        processedImage: processed,
-                        rawCutoutImage: rawCutoutImage,
+                        processedResult: result,
                         ocrResult: ocrResult,
                         aiAnalysis: aiAnalysis,
                         onSaved: { dismiss() }

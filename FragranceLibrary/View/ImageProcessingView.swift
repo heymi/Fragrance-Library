@@ -2,12 +2,11 @@ import SwiftUI
 
 struct ImageProcessingView: View {
     let originalImage: UIImage
-    let onContinue: (UIImage, UIImage?, OCRResult?, RadarAnalysis?) -> Void
+    let onContinue: (ProcessedPerfumeImage, OCRResult?, RadarAnalysis?) -> Void
 
     @Environment(\.dismiss) private var dismiss
 
-    @State private var processedImage: UIImage?
-    @State private var rawCutoutImage: UIImage?
+    @State private var processedResult: ProcessedPerfumeImage?
     @State private var ocrResult: OCRResult?
     @State private var aiAnalysis: RadarAnalysis?
     @State private var progress: Double = 0
@@ -46,8 +45,8 @@ struct ImageProcessingView: View {
             task?.cancel()
         }
         .fullScreenCover(isPresented: $showImagePreview) {
-            if let processedImage {
-                ImagePreviewView(image: processedImage)
+            if let processedResult {
+                ImagePreviewView(image: processedResult.displayImage)
             }
         }
         .fullScreenCover(isPresented: $showManualCrop) {
@@ -65,7 +64,7 @@ struct ImageProcessingView: View {
                 .tracking(2.2)
                 .foregroundStyle(Color.perfumeAccent)
 
-            Text(isComplete ? (hasError ? "Needs Another Pass" : "Cutout Ready") : "Creating Bottle Cutout")
+            Text(isComplete ? completionTitle : "Creating Bottle Cutout")
                 .font(.system(size: 26, weight: .regular, design: .serif))
                 .foregroundStyle(Color.perfumeText)
 
@@ -77,9 +76,19 @@ struct ImageProcessingView: View {
         }
     }
 
+    private var completionTitle: String {
+        if hasError { return "Needs Bottle Area" }
+        if processedResult?.quality.confidence == .medium { return "Needs Check" }
+        if processedResult?.quality.confidence == .low { return "Needs Refine" }
+        return "Cutout Ready"
+    }
+
     private var completionSubtitle: String {
         if hasError {
-            return "The automatic cutout could not confidently isolate the perfume. You can retry or continue with a safe crop."
+            return "The automatic cutout could not confidently isolate the perfume. Select the bottle area for a cleaner result."
+        }
+        if let quality = processedResult?.quality, quality.confidence != .high {
+            return quality.reasons.first ?? "Review the bottle edge before saving."
         }
         return "Tap the image to inspect transparency, outline, and edges before saving."
     }
@@ -98,8 +107,8 @@ struct ImageProcessingView: View {
 
     @ViewBuilder
     private var imageComparisonArea: some View {
-        if isComplete, let processed = processedImage {
-            Image(uiImage: processed)
+        if isComplete, !hasError, let result = processedResult {
+            Image(uiImage: result.displayImage)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .shadow(color: Color.perfumeShadow, radius: 12, y: 4)
@@ -166,10 +175,14 @@ struct ImageProcessingView: View {
 
     private var successSection: some View {
         VStack(spacing: 10) {
+            if let quality = processedResult?.quality {
+                qualityBadge(quality)
+            }
+
             Button {
                 Haptic.medium()
-                if let processed = processedImage {
-                    onContinue(processed, rawCutoutImage, ocrResult, aiAnalysis)
+                if let processedResult {
+                    onContinue(processedResult, ocrResult, aiAnalysis)
                 }
             } label: {
                 Text("Continue to Details")
@@ -222,6 +235,21 @@ struct ImageProcessingView: View {
         }
     }
 
+    private func qualityBadge(_ quality: CutoutQualityReport) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: quality.confidence == .high ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+            Text("\(quality.confidence.title) · \(quality.score)")
+                .font(.caption.weight(.semibold))
+        }
+        .foregroundStyle(quality.confidence == .high ? Color.perfumeAccent : Color.perfumeDanger)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill((quality.confidence == .high ? Color.perfumeAccent : Color.perfumeDanger).opacity(0.1))
+        )
+    }
+
     @ViewBuilder
     private func stepRow(_ step: ProcessingStep) -> some View {
         HStack(spacing: 10) {
@@ -263,7 +291,7 @@ struct ImageProcessingView: View {
         showContinue = false
         progress = 0
         currentStep = .compressing
-        processedImage = nil
+        processedResult = nil
         ocrResult = nil
 
         task?.cancel()
@@ -279,7 +307,7 @@ struct ImageProcessingView: View {
         showContinue = false
         progress = 0
         currentStep = .cropping
-        processedImage = nil
+        processedResult = nil
         ocrResult = nil
 
         task?.cancel()
@@ -289,74 +317,41 @@ struct ImageProcessingView: View {
     }
 
     private func processImage(useSmartCrop: Bool) async {
-        let processor = ImageProcessor()
+        let pipeline = PerfumeImageProcessingPipeline()
         let ocrService = OCRService()
-        let normalizedOriginal = processor.normalizeOrientation(originalImage)
 
         await MainActor.run { currentStep = .compressing }
         await animateProgress(to: 0.25)
-        guard let compressed = processor.downscale(normalizedOriginal, maxWidth: 1024) else {
-            await handleError("Failed to compress image.")
-            return
-        }
         try? await Task.sleep(for: .milliseconds(160))
 
         await MainActor.run { currentStep = .cropping }
         await animateProgress(to: 0.50)
-        let centerCropped = processor.centerCropToCardRatio(compressed)
-        let cropped = useSmartCrop ? await processor.smartCrop(compressed) : centerCropped
         try? await Task.sleep(for: .milliseconds(160))
 
         await MainActor.run { currentStep = .enhancing }
         await animateProgress(to: 0.70)
-        let enhanced = processor.enhance(cropped)
-        let cutout: UIImage?
-        if useSmartCrop {
-            // Run foreground cutout on both cropped and compressed images in parallel.
-            // Vision sometimes prefers one over the other depending on framing.
-            async let croppedCutout = processor.foregroundCutout(cropped)
-            async let compressedCutout = processor.foregroundCutout(compressed)
-            let results = await [croppedCutout, compressedCutout].compactMap { $0 }
-
-            // Pick the largest mask (most foreground detail captured)
-            if let best = results.max(by: { ($0.size.width * $0.size.height) < ($1.size.width * $1.size.height) }) {
-                cutout = best
-            } else {
-                // Both failed — skip rectangle approximation; it's too imprecise for curved bottles.
-                // The error UI will offer manual crop instead.
-                cutout = nil
-            }
-        } else {
-            cutout = nil
+        let mode: PerfumeProcessingMode = useSmartCrop ? .automatic : .safeCrop
+        guard let result = await pipeline.process(originalImage, mode: mode) else {
+            await handleError("Failed to process this image.")
+            return
         }
+        guard !Task.isCancelled else { return }
         try? await Task.sleep(for: .milliseconds(160))
 
         await MainActor.run { currentStep = .rendering }
         await animateProgress(to: 0.90)
 
-        async let bestOCR = ocrService.recognizeBestText(from: [
-            cropped,
-            centerCropped,
-            enhanced,
-            normalizedOriginal
-        ])
-
-        let rendered: UIImage?
-        if let cutout {
-            rendered = processor.renderCutoutCardStyle(cutout)
-        } else if useSmartCrop {
-            await handleError("Could not isolate the perfume bottle. Try a simpler background, or continue with a safe crop for now.")
-            return
-        } else {
-            rendered = processor.renderWithCardStyle(enhanced)
-        }
-
-        guard let rendered else {
-            await handleError("Failed to render final image.")
+        if useSmartCrop && result.quality.confidence == .low {
+            await MainActor.run {
+                processedResult = result
+            }
+            await handleError("Could not confidently isolate the perfume bottle. Select the bottle area so the app can cut inside that region.")
             return
         }
 
+        async let bestOCR = ocrService.recognizeBestText(from: result.ocrImages)
         let ocr = await bestOCR
+        debugLogOCR(result: ocr, source: result.source)
 
         // AI analysis — non-blocking, silent skip on failure
         var analysis: RadarAnalysis? = nil
@@ -368,8 +363,7 @@ struct ImageProcessingView: View {
         }
 
         await MainActor.run {
-            processedImage = rendered
-            rawCutoutImage = cutout
+            processedResult = result
             self.ocrResult = ocr
             self.aiAnalysis = analysis
             progress = 1.0
@@ -388,41 +382,24 @@ struct ImageProcessingView: View {
     }
 
     private func processManualCrop(_ normalizedRect: CGRect) async {
-        let processor = ImageProcessor()
+        let pipeline = PerfumeImageProcessingPipeline()
         let ocrService = OCRService()
-        let normalizedOriginal = processor.normalizeOrientation(originalImage)
 
         await animateProgress(to: 0.25)
-        guard let compressed = processor.downscale(normalizedOriginal, maxWidth: 1024) else {
-            await handleError("Failed to prepare image.")
-            return
-        }
-
         await MainActor.run { currentStep = .cropping }
         await animateProgress(to: 0.55)
-        guard let cutout = await processor.manualBottleRegionCutout(
-            compressed,
-            normalizedRect: normalizedRect
-        ) else {
+        guard let result = await pipeline.process(originalImage, mode: .manualRegion(normalizedRect)) else {
             await handleError("Could not isolate the bottle inside the selected area. Try framing only the perfume, with less hand or background.")
             return
         }
+        guard !Task.isCancelled else { return }
 
         await MainActor.run { currentStep = .rendering }
         await animateProgress(to: 0.90)
 
-        async let bestOCR = ocrService.recognizeBestText(from: [
-            cutout,
-            compressed,
-            normalizedOriginal
-        ])
-
-        guard let rendered = processor.renderCutoutCardStyle(cutout) else {
-            await handleError("Failed to render final image.")
-            return
-        }
-
+        async let bestOCR = ocrService.recognizeBestText(from: result.ocrImages)
         let ocr = await bestOCR
+        debugLogOCR(result: ocr, source: result.source)
 
         var analysis: RadarAnalysis? = nil
         let text = ocr.fullText
@@ -433,8 +410,7 @@ struct ImageProcessingView: View {
         }
 
         await MainActor.run {
-            processedImage = rendered
-            rawCutoutImage = cutout
+            processedResult = result
             self.ocrResult = ocr
             self.aiAnalysis = analysis
             progress = 1.0
@@ -470,6 +446,15 @@ struct ImageProcessingView: View {
         errorMessage = message
         isComplete = true
         Haptic.error()
+    }
+
+    private func debugLogOCR(result: OCRResult, source: ProcessingSource) {
+        #if DEBUG
+        let summary = [result.brand, result.name, result.concentration, result.volume]
+            .compactMap { $0 }
+            .joined(separator: " | ")
+        print("ImageProcessingView: bestOCR source=\(source.debugName) textLength=\(result.fullText.count) fields=\(summary)")
+        #endif
     }
 }
 

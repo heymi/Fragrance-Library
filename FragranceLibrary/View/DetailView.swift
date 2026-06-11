@@ -249,7 +249,7 @@ struct DetailView: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                Image(systemName: "spray.bottle")
+                Image(systemName: "drop")
                     .font(.system(size: 60))
                     .foregroundStyle(Color.perfumeTextSecondary.opacity(0.4))
             }
