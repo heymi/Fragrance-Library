@@ -3,84 +3,89 @@ import SwiftUI
 struct PerfumeCard: View {
     let perfume: Perfume
     let index: Int
+    var onOpenDetail: () -> Void = {}
 
     @State private var appeared = false
-    @GestureState private var isPressed = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            // Image area
-            imageView
-                .aspectRatio(PerfumeLayout.cardAspectRatio, contentMode: .fill)
-                .clipped()
-
-            // Info
-            VStack(alignment: .leading, spacing: 2) {
-                if !perfume.brand.isEmpty {
-                    Text(perfume.brand)
-                        .font(.caption.weight(.semibold))
-                        .fontDesign(.serif)
-                        .foregroundStyle(Color.perfumeAccent)
-                        .lineLimit(1)
-                }
-
-                if !perfume.name.isEmpty {
-                    Text(perfume.name)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(Color.perfumeText)
-                        .lineLimit(1)
-                }
-
-                if !perfume.subtitle.isEmpty {
-                    Text(perfume.subtitle)
-                        .font(.caption2)
-                        .foregroundStyle(Color.perfumeTextSecondary)
-                        .lineLimit(1)
-                }
+        VStack(alignment: .leading, spacing: 9) {
+            Button(action: onOpenDetail) {
+                imageView
+                    .aspectRatio(0.78, contentMode: .fit)
             }
-            .padding(.horizontal, 10)
-            .padding(.bottom, 10)
-            .padding(.top, 4)
+            .buttonStyle(.plain)
+
+            Button(action: onOpenDetail) {
+                infoBlock
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
-        .background(Color.perfumeCard)
-        .clipShape(RoundedRectangle(cornerRadius: PerfumeLayout.cardCornerRadius))
-        .shadow(
-            color: Color.perfumeShadow,
-            radius: isPressed ? 6 : 2,
-            y: isPressed ? 4 : 1
-        )
-        .scaleEffect(isPressed ? 0.96 : 1.0)
         .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 20)
-        .animation(.cardStagger(index: index), value: appeared)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .updating($isPressed) { _, state, _ in
-                    state = true
-                }
-        )
+        .offset(y: appeared ? 0 : 12)
+        .animation(.cardStagger(index: index, baseDelay: 0.035), value: appeared)
         .onAppear {
             appeared = true
         }
     }
 
-    // MARK: - Image View
+    private var infoBlock: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(perfume.brand.isEmpty ? "Unknown House" : perfume.brand.uppercased())
+                .font(PerfumeType.label(9.5))
+                .tracking(1.5)
+                .foregroundStyle(Color.perfumeTextSecondary)
+                .lineLimit(1)
+
+            Text(perfume.name.isEmpty ? perfume.displayTitle : perfume.name)
+                .font(PerfumeType.bodyMedium(13))
+                .foregroundStyle(Color.perfumeText)
+                .lineLimit(1)
+
+            if !perfume.subtitle.isEmpty {
+                Text(perfume.subtitle)
+                    .font(PerfumeType.body(11))
+                    .foregroundStyle(Color.perfumeTextSecondary.opacity(0.86))
+                    .lineLimit(1)
+            }
+        }
+        .padding(.horizontal, 2)
+    }
 
     @ViewBuilder
     private var imageView: some View {
-        if let filename = perfume.processedImageFilename,
-           let image = ImageStorageManager.shared.loadImage(filename: filename, type: .processed) {
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-        } else {
-            // Placeholder
-            ZStack {
-                Color.perfumeBorder
-                Image(systemName: "spray.bottle")
-                    .font(.largeTitle)
-                    .foregroundStyle(Color.perfumeTextSecondary)
+        ZStack {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.perfumeIvory.opacity(0.84))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.perfumeBorder.opacity(0.72), lineWidth: 0.8)
+                )
+
+            if let image = loadedImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .padding(12)
+            } else {
+                Image(systemName: "drop")
+                    .font(.system(size: 34, weight: .ultraLight))
+                    .foregroundStyle(Color.perfumeTextSecondary.opacity(0.48))
             }
         }
+    }
+
+    private var loadedImage: UIImage? {
+        if let image = ImageStorageManager.shared.loadImage(
+            filename: perfume.processedImageFilename,
+            type: .processed
+        ) {
+            return image
+        }
+        return ImageStorageManager.shared.loadImage(
+            filename: perfume.originalImageFilename,
+            type: .original
+        )
     }
 }

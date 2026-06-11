@@ -1,14 +1,12 @@
 import SwiftUI
 
-/// Container that wraps the entire "Add Perfume" flow in a single NavigationStack.
-/// Eliminates cross-presentation-level state conflicts present in the old
-/// sheet + fullScreenCover approach on HomeView.
 struct AddFlowView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedImage: UIImage?
-    @State private var processedImage: UIImage?
+    @State private var processedResult: ProcessedPerfumeImage?
     @State private var ocrResult: OCRResult?
+    @State private var aiAnalysis: RadarAnalysis?
     @State private var showProcessing = false
     @State private var showConfirm = false
 
@@ -20,18 +18,21 @@ struct AddFlowView: View {
             }
             .navigationDestination(isPresented: $showProcessing) {
                 if let image = selectedImage {
-                    ImageProcessingView(originalImage: image) { processed, ocr in
-                        processedImage = processed
+                    ImageProcessingView(originalImage: image) { result, ocr, analysis in
+                        processedResult = result
                         ocrResult = ocr
+                        aiAnalysis = analysis
                         showConfirm = true
                     }
                 }
             }
             .navigationDestination(isPresented: $showConfirm) {
-                if let processed = processedImage {
+                if let result = processedResult {
                     InfoConfirmView(
-                        processedImage: processed,
+                        originalImage: selectedImage,
+                        processedResult: result,
                         ocrResult: ocrResult,
+                        aiAnalysis: aiAnalysis,
                         onSaved: { dismiss() }
                     )
                 }

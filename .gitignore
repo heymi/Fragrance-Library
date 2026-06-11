@@ -26,3 +26,8 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Secrets
+*.xcconfig
+!Config.xcconfig.example
+FragranceLibrary/Service/APIKey.generated.swift

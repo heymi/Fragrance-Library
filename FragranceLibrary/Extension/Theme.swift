@@ -3,26 +3,32 @@ import SwiftUI
 // MARK: - Color Theme
 
 extension Color {
-    /// Warm off-white background (Light: #F8F6F2, Dark: #1C1C1E)
-    static let perfumeBg = Color(light: Color(hex: 0xF8F6F2), dark: Color(hex: 0x1C1C1E))
+    /// Warm washi-paper background.
+    static let perfumeBg = Color(light: Color(hex: 0xF4F0E8), dark: Color(hex: 0x151412))
 
-    /// Card surface (Light: #FFFFFF, Dark: #2C2C2E)
-    static let perfumeCard = Color(light: .white, dark: Color(hex: 0x2C2C2E))
+    /// Porcelain card surface.
+    static let perfumeCard = Color(light: Color(hex: 0xFBFAF6), dark: Color(hex: 0x22201D))
 
-    /// Primary text — deep charcoal (Light: #2D2D2B, Dark: #E5E5E0)
-    static let perfumeText = Color(light: Color(hex: 0x2D2D2B), dark: Color(hex: 0xE5E5E0))
+    /// Primary text — ink black.
+    static let perfumeText = Color(light: Color(hex: 0x1E1C18), dark: Color(hex: 0xE9E4D8))
 
-    /// Secondary text — muted warm gray
-    static let perfumeTextSecondary = Color(light: Color(hex: 0x8E8E8A), dark: Color(hex: 0x999994))
+    /// Secondary text — warm stone gray.
+    static let perfumeTextSecondary = Color(light: Color(hex: 0x756E63), dark: Color(hex: 0xA9A196))
 
-    /// Amber-gold accent (#CC9900)
-    static let perfumeAccent = Color(light: Color(hex: 0xCC9900), dark: Color(hex: 0xD4A520))
+    /// Muted brass accent.
+    static let perfumeAccent = Color(light: Color(hex: 0x9D7A3A), dark: Color(hex: 0xC9A867))
+
+    /// Soft blush highlight for a feminine editorial warmth.
+    static let perfumeBlush = Color(light: Color(hex: 0xE8D7CA), dark: Color(hex: 0x5B4840))
+
+    /// Warm ivory highlight.
+    static let perfumeIvory = Color(light: Color(hex: 0xFFFDF7), dark: Color(hex: 0x2A2722))
 
     /// Border / divider
-    static let perfumeBorder = Color(light: Color(hex: 0xE8E6E0), dark: Color(hex: 0x38383A))
+    static let perfumeBorder = Color(light: Color(hex: 0xD8D0C2), dark: Color(hex: 0x38352F))
 
     /// Card shadow
-    static let perfumeShadow = Color.black.opacity(0.08)
+    static let perfumeShadow = Color.black.opacity(0.06)
 
     /// Error / delete red
     static let perfumeDanger = Color(light: Color(hex: 0xD94841), dark: Color(hex: 0xE05550))
@@ -55,6 +61,12 @@ extension Animation {
 
     /// Button press spring — quick and tight
     static let buttonPress = Animation.spring(duration: 0.3, bounce: 0.15)
+
+    /// Premium gallery open/close spring.
+    static let galleryBloom = Animation.spring(response: 0.55, dampingFraction: 0.82)
+
+    /// Soft editorial reveal.
+    static let editorialReveal = Animation.easeOut(duration: 0.55)
 
     /// Staggered list entrance
     static func cardStagger(index: Int, baseDelay: Double = 0.06) -> Animation {
@@ -93,6 +105,28 @@ enum PerfumeLayout {
     static let cardHPadding: CGFloat = 16
 }
 
+enum PerfumeType {
+    static func label(_ size: CGFloat = 11) -> Font {
+        .custom("Avenir Next", size: size).weight(.semibold)
+    }
+
+    static func title(_ size: CGFloat = 24) -> Font {
+        .custom("Avenir Next", size: size).weight(.medium)
+    }
+
+    static func body(_ size: CGFloat = 14) -> Font {
+        .custom("Avenir Next", size: size).weight(.regular)
+    }
+
+    static func bodyMedium(_ size: CGFloat = 14) -> Font {
+        .custom("Avenir Next", size: size).weight(.medium)
+    }
+
+    static func display(size: CGFloat, weight: Font.Weight = .semibold) -> Font {
+        .custom("Avenir Next", size: size).weight(weight)
+    }
+}
+
 // MARK: - Haptic Feedback
 
 enum Haptic {
@@ -114,5 +148,78 @@ enum Haptic {
 
     static func error() {
         UINotificationFeedbackGenerator().notificationOccurred(.error)
+    }
+}
+
+// MARK: - Premium Surfaces
+
+struct PerfumePaperBackground: View {
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(hex: 0xFBF7EF),
+                    Color.perfumeBg,
+                    Color(hex: 0xEFE5D8)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            Circle()
+                .fill(Color.perfumeBlush.opacity(0.28))
+                .frame(width: 260, height: 260)
+                .blur(radius: 72)
+                .offset(x: -130, y: -210)
+
+            Circle()
+                .fill(Color.perfumeAccent.opacity(0.11))
+                .frame(width: 240, height: 240)
+                .blur(radius: 70)
+                .offset(x: 150, y: 240)
+        }
+        .ignoresSafeArea()
+    }
+}
+
+struct PremiumPrimaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.body.weight(.semibold))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 15)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color.perfumeText,
+                        Color(hex: 0x3D352C)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .opacity(configuration.isPressed ? 0.86 : 1)
+            .scaleEffect(configuration.isPressed ? 0.985 : 1)
+            .animation(.buttonPress, value: configuration.isPressed)
+    }
+}
+
+struct PremiumSecondaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Color.perfumeText)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 13)
+            .background(Color.perfumeIvory.opacity(configuration.isPressed ? 0.70 : 0.95))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(Color.perfumeText.opacity(0.18), lineWidth: 1)
+            )
+            .shadow(color: Color.perfumeShadow, radius: 3, y: 1)
+            .animation(.buttonPress, value: configuration.isPressed)
     }
 }

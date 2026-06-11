@@ -15,6 +15,15 @@ final class Perfume {
     var createdAt: Date
     var updatedAt: Date
 
+    // Scene compass radar chart
+    var radarElder: Double = 0
+    var radarDate: Double = 0
+    var radarGirlApproved: Double = 0
+    var radarOffice: Double = 0
+    var radarSelf: Double = 0
+    var radarImpression: Double = 0
+    var strategyLine: String = ""
+
     init(
         id: UUID = UUID(),
         brand: String = "",
@@ -26,7 +35,14 @@ final class Perfume {
         originalImageFilename: String? = nil,
         ocrText: String? = nil,
         createdAt: Date = Date(),
-        updatedAt: Date = Date()
+        updatedAt: Date = Date(),
+        radarElder: Double = 0,
+        radarDate: Double = 0,
+        radarGirlApproved: Double = 0,
+        radarOffice: Double = 0,
+        radarSelf: Double = 0,
+        radarImpression: Double = 0,
+        strategyLine: String = ""
     ) {
         self.id = id
         self.brand = brand
@@ -39,6 +55,21 @@ final class Perfume {
         self.ocrText = ocrText
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.radarElder = radarElder
+        self.radarDate = radarDate
+        self.radarGirlApproved = radarGirlApproved
+        self.radarOffice = radarOffice
+        self.radarSelf = radarSelf
+        self.radarImpression = radarImpression
+        self.strategyLine = strategyLine
+    }
+
+    /// Whether any radar scores have been set
+    /// Whether any radar scores have been set
+    var hasRadarScores: Bool {
+        [radarElder, radarDate, radarGirlApproved,
+         radarOffice, radarSelf, radarImpression]
+            .contains(where: { $0 > 0 })
     }
 
     /// Formatted date string for display

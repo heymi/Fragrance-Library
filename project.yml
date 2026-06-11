@@ -17,6 +17,9 @@ targets:
     sources:
       - path: FragranceLibrary
         type: group
+    configFiles:
+      Debug: Config.xcconfig
+      Release: Config.xcconfig
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.fragrancelibrary.app
@@ -26,7 +29,8 @@ targets:
         INFOPLIST_KEY_NSCameraUsageDescription: "We need camera access to take photos of your perfume bottles."
         INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "We need photo library access so you can choose existing perfume photos."
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: "YES"
-        INFOPLIST_KEY_UILaunchScreen: ""
+        INFOPLIST_KEY_UILaunchStoryboardName: LaunchScreen
+        INFOPLIST_KEY_UIUserInterfaceStyle: Light
         INFOPLIST_KEY_UIRequiredDeviceCapabilities:
           - arm64
         INFOPLIST_KEY_UISupportedInterfaceOrientations:
@@ -36,9 +40,28 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
     preBuildScripts:
+      - name: "Generate API Key"
+        script: |
+          echo "let DEEPSEEK_API_KEY = \"${DEEPSEEK_API_KEY}\"" > "${SRCROOT}/FragranceLibrary/Service/APIKey.generated.swift"
+        inputFiles:
+          - $(SRCROOT)/Config.xcconfig
+        outputFiles:
+          - $(SRCROOT)/FragranceLibrary/Service/APIKey.generated.swift
       - name: "SwiftLint"
         script: |
           if which swiftlint > /dev/null; then
             swiftlint --config "${SRCROOT}/.swiftlint.yml" 2>/dev/null || true
           fi
         basedOnDependencyAnalysis: false
+  FragranceLibraryTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: FragranceLibraryTests
+        type: group
+    dependencies:
+      - target: FragranceLibrary
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.fragrancelibrary.app.tests
+        GENERATE_INFOPLIST_FILE: "YES"
